@@ -852,7 +852,7 @@ function SvgDualLineChart({ line1, line2, labels, line1Label, line2Label, line1C
   const paddingBottom = 30;
   
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 500;
+  const chartWidth = 800;
   
   const points1 = line1.map((val, index) => {
     const x = paddingLeft + (index / (line1.length - 1)) * (chartWidth - paddingLeft - paddingRight);
@@ -878,8 +878,8 @@ function SvgDualLineChart({ line1, line2, labels, line1Label, line2Label, line1C
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-            <text x={paddingLeft - 8} y={y + 4} textAnchor="end" style={{ fill: line1Color, fontSize: '9px', fontWeight: 600 }}>{val1}</text>
-            <text x={chartWidth - paddingRight + 8} y={y + 4} textAnchor="start" style={{ fill: line2Color, fontSize: '9px', fontWeight: 600 }}>{val2}</text>
+            <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: line1Color, fontSize: '14px', fontWeight: 600 }}>{val1}</text>
+            <text x={chartWidth - paddingRight + 8} y={y + 5} textAnchor="start" style={{ fill: line2Color, fontSize: '14px', fontWeight: 600 }}>{val2}</text>
           </g>
         );
       })}
@@ -895,19 +895,17 @@ function SvgDualLineChart({ line1, line2, labels, line1Label, line2Label, line1C
       ))}
       
       {points1.map((p, i) => (
-        (points1.length < 8 || i % 2 === 0 || i === points1.length - 1) && (
-          <text key={`lbl-${i}`} x={p.x} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
-            {labels[i]}
-          </text>
-        )
+        <text key={`lbl-${i}`} x={p.x} y={height - 8} textAnchor="middle" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 500 }}>
+          {labels[i]}
+        </text>
       ))}
       
-      <g transform={`translate(${paddingLeft}, 12)`}>
-        <circle cx="5" cy="5" r="4" fill={line1Color} />
-        <text x="14" y="8" style={{ fill: '#334155', fontSize: '9px', fontWeight: 700 }}>{line1Label}</text>
+      <g transform={`translate(${paddingLeft}, 10)`}>
+        <circle cx="6" cy="7" r="5" fill={line1Color} />
+        <text x="16" y="12" style={{ fill: '#334155', fontSize: '14px', fontWeight: 700 }}>{line1Label}</text>
         
-        <circle cx="120" cy="5" r="4" fill={line2Color} />
-        <text x="129" y="8" style={{ fill: '#334155', fontSize: '9px', fontWeight: 700 }}>{line2Label}</text>
+        <circle cx="180" cy="7" r="5" fill={line2Color} />
+        <text x="190" y="12" style={{ fill: '#334155', fontSize: '14px', fontWeight: 700 }}>{line2Label}</text>
       </g>
     </svg>
   );
@@ -922,10 +920,10 @@ function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
   const criticalPct = critical / total;
   const lossPct = loss / total;
   
-  const r = 50;
-  const circ = Math.PI * r; // ~157.08
+  const r = 65;
+  const circ = Math.PI * r; // ~204.2
   
-  const strokeWidth = 14;
+  const strokeWidth = 16;
   
   const healthyLen = healthyPct * circ;
   const warningLen = warningPct * circ;
@@ -934,54 +932,54 @@ function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
   
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-      <div style={{ position: 'relative', width: '160px', height: '100px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-        <svg width="160" height="90" viewBox="0 0 120 70">
-          <path d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="#f1f5f9" strokeWidth={strokeWidth} strokeLinecap="round" />
+      <div style={{ position: 'relative', width: '220px', height: '130px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+        <svg width="220" height="120" viewBox="0 0 150 85">
+          <path d="M 10 75 A 65 65 0 0 1 140 75" fill="none" stroke="#f1f5f9" strokeWidth={strokeWidth} strokeLinecap="round" />
           
           <path 
-            d="M 10 60 A 50 50 0 0 1 110 60" 
+            d="M 10 75 A 65 65 0 0 1 140 75" 
             fill="none" 
             stroke="#10b981" 
             strokeWidth={strokeWidth} 
-            strokeDasharray={`${healthyLen} 200`}
+            strokeDasharray={`${healthyLen} 300`}
             strokeDashoffset="0"
             strokeLinecap="round"
           />
           <path 
-            d="M 10 60 A 50 50 0 0 1 110 60" 
+            d="M 10 75 A 65 65 0 0 1 140 75" 
             fill="none" 
             stroke="#f59e0b" 
             strokeWidth={strokeWidth} 
-            strokeDasharray={`${warningLen} 200`}
+            strokeDasharray={`${warningLen} 300`}
             strokeDashoffset={`-${healthyLen}`}
             strokeLinecap={warningLen > 0 ? "round" : "butt"}
           />
           <path 
-            d="M 10 60 A 50 50 0 0 1 110 60" 
+            d="M 10 75 A 65 65 0 0 1 140 75" 
             fill="none" 
             stroke="#f43f5e" 
             strokeWidth={strokeWidth} 
-            strokeDasharray={`${criticalLen} 200`}
+            strokeDasharray={`${criticalLen} 300`}
             strokeDashoffset={`-${healthyLen + warningLen}`}
             strokeLinecap={criticalLen > 0 ? "round" : "butt"}
           />
           <path 
-            d="M 10 60 A 50 50 0 0 1 110 60" 
+            d="M 10 75 A 65 65 0 0 1 140 75" 
             fill="none" 
             stroke="#be123c" 
             strokeWidth={strokeWidth} 
-            strokeDasharray={`${lossLen} 200`}
+            strokeDasharray={`${lossLen} 300`}
             strokeDashoffset={`-${healthyLen + warningLen + criticalLen}`}
             strokeLinecap="round"
           />
         </svg>
-        <div style={{ position: 'absolute', bottom: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>{total}</span>
-          <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>Total Tenants</span>
+        <div style={{ position: 'absolute', bottom: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span style={{ fontSize: '24px', fontWeight: '800', color: '#1e293b' }}>{total}</span>
+          <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>Total Tenants</span>
         </div>
       </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginTop: '12px', width: '100%' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', marginTop: '16px', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
