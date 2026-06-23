@@ -374,12 +374,9 @@ function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb' }) {
             strokeWidth="2"
             className="chart-dot"
           />
-          {/* Label under point - only every 2nd or 3rd label to avoid clutter */}
-          {(points.length < 8 || i % 2 === 0 || i === points.length - 1) && (
-            <text x={p.x} y={height - 10} className="chart-axis-text" textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
-              {p.label}
-            </text>
-          )}
+          <text x={p.x} y={height - 10} className="chart-axis-text" textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
+            {p.label}
+          </text>
         </g>
       ))}
     </svg>
@@ -762,11 +759,15 @@ function SvgSavingsChart({ currentPlanCost, upgradePlanCost, months = 6, height 
         <text x="60" y="27" textAnchor="middle" style={{ fill: '#10b981', fontSize: '12px', fontWeight: 800 }}>${savings.toLocaleString()}</text>
       </g>
       
-      {Array.from({ length: months }).map((_, i) => (
-        <text key={i} x={paddingLeft + (i / (months - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
-          Month {i + 1}
-        </text>
-      ))}
+      {Array.from({ length: months }).map((_, i) => {
+        const d = new Date(2026, 5 + i, 1);
+        const label = d.toLocaleString('default', { month: 'short' });
+        return (
+          <text key={i} x={paddingLeft + (i / (months - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
+            {label}
+          </text>
+        );
+      })}
       
       <g transform={`translate(${paddingLeft + 10}, 10)`}>
         <line x1="0" y1="5" x2="15" y2="5" stroke="#f43f5e" strokeWidth="2" />
@@ -1715,6 +1716,134 @@ export default function App() {
                           );
                         })}
                       </div>
+
+                      {/* Subscription Details & Exceed Limit Warning */}
+                      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: '24px', paddingTop: '20px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '6fr 4fr', gap: '24px' }}>
+                          {/* Plan Metadata */}
+                          <div style={{ 
+                            background: '#f8fafc', 
+                            border: '1px solid var(--border-color)', 
+                            borderRadius: '12px', 
+                            padding: '16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between'
+                          }}>
+                            <h4 style={{ fontSize: '11px', color: '#64748b', marginBottom: '12px', textTransform: 'uppercase', fontWeight: 700 }}>
+                              Subscription Plan Details
+                            </h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                                <span style={{ color: '#64748b' }}>Current Plan:</span>
+                                <strong style={{ color: '#0f172a' }}>{currentCustomer.planName || 'Standard Enterprise'}</strong>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                                <span style={{ color: '#64748b' }}>Billing Cycle:</span>
+                                <span style={{ color: '#0f172a', fontWeight: 500 }}>Monthly</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                                <span style={{ color: '#64748b' }}>Renewal/Expiry Date:</span>
+                                <strong style={{ color: '#0f172a' }}>{currentCustomer.nextInvoiceDate}</strong>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                                <span style={{ color: '#64748b' }}>Outstanding Overage:</span>
+                                <span style={{ color: currentCustomer.overages > 0 ? '#e11d48' : '#0f172a', fontWeight: 700 }}>
+                                  {currentCustomer.overages > 0 ? `$${currentCustomer.overages}` : 'None'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Plan Status Warning Indicator */}
+                          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'stretch' }}>
+                            {currentCustomer.overages > 0 ? (
+                              <div className="alert-card critical" style={{ 
+                                borderLeftWidth: '4px', 
+                                padding: '16px', 
+                                height: '100%', 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                justifyContent: 'space-between',
+                                gap: '12px',
+                                borderRadius: '12px'
+                              }}>
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                                  <AlertTriangle size={18} className="alert-icon text-red" style={{ flexShrink: 0, marginTop: '2px' }} />
+                                  <div>
+                                    <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#991b1b' }}>
+                                      Quota Limit Exceeded
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: '11px', lineHeight: 1.4, color: '#991b1b' }}>
+                                      Your account has exceeded plan allocations. Upgrade your plan or settle the accrued balance of <strong>${currentCustomer.overages}</strong> to prevent deactivation.
+                                    </p>
+                                  </div>
+                                </div>
+                                <button 
+                                  className="btn btn-pink" 
+                                  style={{ 
+                                    width: '100%', 
+                                    padding: '8px 12px', 
+                                    fontSize: '11px', 
+                                    fontWeight: 700, 
+                                    borderRadius: '6px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    marginTop: '4px'
+                                  }}
+                                  onClick={() => alert(`Redirecting to payment gateway for overage invoice amount of $${currentCustomer.overages}...`)}
+                                >
+                                  <CreditCard size={13} /> Pay Overage Balance
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="alert-card healthy" style={{ 
+                                borderLeftWidth: '4px', 
+                                padding: '16px', 
+                                height: '100%', 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                justifyContent: 'space-between',
+                                gap: '12px',
+                                borderRadius: '12px'
+                              }}>
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                                  <CheckCircle2 size={18} className="alert-icon text-green" style={{ flexShrink: 0, marginTop: '2px' }} />
+                                  <div>
+                                    <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#065f46' }}>
+                                      Account Active & Compliant
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: '11px', lineHeight: 1.4, color: '#065f46' }}>
+                                      Your usage is within normal limits. Your next automatic renewal is scheduled for <strong>{currentCustomer.nextInvoiceDate}</strong>.
+                                    </p>
+                                  </div>
+                                </div>
+                                <button 
+                                  className="btn btn-blue" 
+                                  style={{ 
+                                    width: '100%', 
+                                    padding: '8px 12px', 
+                                    fontSize: '11px', 
+                                    fontWeight: 700, 
+                                    borderRadius: '6px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    marginTop: '4px',
+                                    opacity: 0.8
+                                  }}
+                                  disabled
+                                >
+                                  <CheckCircle2 size={13} /> Subscription Active
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -1747,65 +1876,80 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Layout: Historical Trends & Module Split Charts */}
-                  <div className="dashboard-grid-1-1" style={{ marginTop: '24px' }}>
-                    <div className="card">
+                  {/* Staggered Row 1: Line Chart 1 (60%) + Donut Chart 1 (40%) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '6fr 4fr', gap: '24px', marginTop: '24px' }}>
+                    {/* Monthly Cost Trend */}
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                       <div className="section-title-bar">
-                        <span className="section-title"><TrendingUp size={16} className="text-blue" /> Billing & Consumption Historical Trends</span>
+                        <span className="section-title">
+                          <TrendingUp size={16} className="text-blue" /> Monthly Cost Trend (12 Months)
+                        </span>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <div>
-                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Monthly Cost Trend (12 Months)</h4>
-                          <div className="chart-container">
-                            <SvgLineChart 
-                              data={currentCustomer.costTrend}
-                              labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                              strokeColor="#e91e63"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Storage Volume Growth (GB)</h4>
-                          <div className="chart-container">
-                            <SvgLineChart 
-                              data={currentCustomer.storageTrend}
-                              labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                              strokeColor="#2563eb"
-                            />
-                          </div>
-                        </div>
+                      <div className="chart-container" style={{ height: '200px', marginTop: '10px', flexGrow: 1 }}>
+                        <SvgLineChart 
+                          data={currentCustomer.costTrend}
+                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                          strokeColor="#e91e63"
+                        />
                       </div>
                     </div>
 
-                    <div className="card">
+                    {/* Cost By Platform Module */}
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                       <div className="section-title-bar">
-                        <span className="section-title"><Cpu size={16} className="text-blue" /> Module Usage & Azure Breakdown</span>
+                        <span className="section-title">
+                          <Cpu size={16} className="text-pink" /> Cost By Platform Module
+                        </span>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <div>
-                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Cost By Platform Module</h4>
-                          <SvgDonutChart 
-                            data={[
-                              { name: 'DAM (Asset Storage)', value: currentCustomer.moduleCostSplit.dam },
-                              { name: 'Ticket Builder', value: currentCustomer.moduleCostSplit.ticketBuilder },
-                              { name: 'Downloads API', value: currentCustomer.moduleCostSplit.downloads },
-                              { name: 'API Requests & Hooks', value: currentCustomer.moduleCostSplit.api }
-                            ]}
-                            colors={['#e91e63', '#2563eb', '#10b981', '#f59e0b']}
-                          />
-                        </div>
-                        <div>
-                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Azure Infrastructure split</h4>
-                          <SvgDonutChart 
-                            data={[
-                              { name: 'Blob Storage', value: currentCustomer.azureCostSplit.storage },
-                              { name: 'CDN Bandwidth', value: currentCustomer.azureCostSplit.cdn },
-                              { name: 'SQL Databases', value: currentCustomer.azureCostSplit.database },
-                              { name: 'Functions / Network', value: currentCustomer.azureCostSplit.functions + currentCustomer.azureCostSplit.networking }
-                            ]}
-                            colors={['#e91e63', '#3b82f6', '#10b981', '#8b5cf6']}
-                          />
-                        </div>
+                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
+                        <SvgDonutChart 
+                          data={[
+                            { name: 'DAM (Asset Storage)', value: currentCustomer.moduleCostSplit.dam },
+                            { name: 'Ticket Builder', value: currentCustomer.moduleCostSplit.ticketBuilder },
+                            { name: 'Downloads API', value: currentCustomer.moduleCostSplit.downloads },
+                            { name: 'API Requests & Hooks', value: currentCustomer.moduleCostSplit.api }
+                          ]}
+                          colors={['#e91e63', '#2563eb', '#10b981', '#f59e0b']}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Staggered Row 2: Donut Chart 2 (40%) + Line Chart 2 (60%) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '4fr 6fr', gap: '24px', marginTop: '24px' }}>
+                    {/* Azure Infrastructure Split */}
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                      <div className="section-title-bar">
+                        <span className="section-title">
+                          <Layers size={16} className="text-blue" /> Azure Infrastructure Split
+                        </span>
+                      </div>
+                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
+                        <SvgDonutChart 
+                          data={[
+                            { name: 'Blob Storage', value: currentCustomer.azureCostSplit.storage },
+                            { name: 'CDN Bandwidth', value: currentCustomer.azureCostSplit.cdn },
+                            { name: 'SQL Databases', value: currentCustomer.azureCostSplit.database },
+                            { name: 'Functions / Network', value: currentCustomer.azureCostSplit.functions + currentCustomer.azureCostSplit.networking }
+                          ]}
+                          colors={['#e91e63', '#3b82f6', '#10b981', '#8b5cf6']}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Storage Volume Growth */}
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                      <div className="section-title-bar">
+                        <span className="section-title">
+                          <Database size={16} className="text-green" /> Storage Volume Growth (GB)
+                        </span>
+                      </div>
+                      <div className="chart-container" style={{ height: '200px', marginTop: '10px', flexGrow: 1 }}>
+                        <SvgLineChart 
+                          data={currentCustomer.storageTrend}
+                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                          strokeColor="#2563eb"
+                        />
                       </div>
                     </div>
                   </div>
