@@ -308,13 +308,13 @@ function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb' }) {
   if (!data || data.length === 0) return null;
   const maxVal = Math.max(...data) * 1.15 || 100;
   const minVal = 0;
-  const paddingLeft = 45;
+  const paddingLeft = 55;
   const paddingRight = 15;
   const paddingTop = 15;
   const paddingBottom = 30;
   
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 500;
+  const chartWidth = 800;
   
   const points = data.map((val, index) => {
     const x = paddingLeft + (index / (data.length - 1)) * (chartWidth - paddingLeft - paddingRight);
@@ -348,7 +348,7 @@ function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb' }) {
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} className="chart-grid-line" stroke="#f1f5f9" strokeWidth="1" />
-            <text x={paddingLeft - 8} y={y + 4} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>{val}</text>
+            <text x={paddingLeft - 8} y={y + 5} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '14px' }}>{val}</text>
           </g>
         );
       })}
@@ -374,7 +374,7 @@ function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb' }) {
             strokeWidth="2"
             className="chart-dot"
           />
-          <text x={p.x} y={height - 10} className="chart-axis-text" textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
+          <text x={p.x} y={height - 8} className="chart-axis-text" textAnchor="middle" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 500 }}>
             {p.label}
           </text>
         </g>
@@ -418,21 +418,21 @@ function SvgDonutChart({ data, colors }) {
           })}
         </svg>
         <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b', lineHeight: 1 }}>
+          <span style={{ fontSize: '22px', fontWeight: '800', color: '#1e293b', lineHeight: 1 }}>
             {total >= 1000 ? `$${(total/1000).toFixed(1)}k` : `$${total}`}
           </span>
-          <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Total</span>
+          <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Total</span>
         </div>
       </div>
       <div className="donut-legend" style={{ gridTemplateColumns: '1fr', marginTop: '16px' }}>
         {data.map((item, index) => (
           <div key={index} className="legend-item" style={{ justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="legend-color" style={{ backgroundColor: colors[index], width: '8px', height: '8px' }} />
-              <span style={{ fontWeight: 600, fontSize: '12px', color: '#334155' }}>{item.name}</span>
+              <span className="legend-color" style={{ backgroundColor: colors[index], width: '10px', height: '10px' }} />
+              <span style={{ fontWeight: 600, fontSize: '14px', color: '#334155' }}>{item.name}</span>
             </div>
-            <span style={{ fontWeight: 700, fontSize: '12px', color: '#0f172a' }}>
-              ${item.value.toLocaleString()} <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 500 }}>({Math.round((item.value / total) * 100)}%)</span>
+            <span style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>
+              ${item.value.toLocaleString()} <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>({Math.round((item.value / total) * 100)}%)</span>
             </span>
           </div>
         ))}
@@ -445,13 +445,13 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
   if (!data || data.length === 0) return null;
   const values = data.map(d => d.value);
   const maxVal = Math.max(...values) * 1.15 || 100;
-  const paddingLeft = isHorizontal ? 120 : 45;
+  const paddingLeft = isHorizontal ? 150 : 55;
   const paddingRight = 20;
   const paddingTop = 15;
   const paddingBottom = isHorizontal ? 20 : 40;
 
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 500;
+  const chartWidth = 800;
 
   return (
     <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
@@ -465,12 +465,12 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
             
             return (
               <g key={index}>
-                <text x={paddingLeft - 10} y={y + barHeight/2 + 4} textAnchor="end" style={{ fill: '#334155', fontSize: '11px', fontWeight: 600 }}>
+                <text x={paddingLeft - 10} y={y + barHeight/2 + 5} textAnchor="end" style={{ fill: '#334155', fontSize: '14px', fontWeight: 600 }}>
                   {item.name}
                 </text>
                 <rect x={paddingLeft} y={y} width={chartWidth - paddingLeft - paddingRight} height={barHeight} rx={barHeight/2} fill="#f1f5f9" />
                 <rect x={paddingLeft} y={y} width={Math.max(barHeight, barWidth)} height={barHeight} rx={barHeight/2} fill={barColor} />
-                <text x={paddingLeft + barWidth + 8} y={y + barHeight/2 + 4} style={{ fill: '#0f172a', fontSize: '11px', fontWeight: 700 }}>
+                <text x={paddingLeft + barWidth + 8} y={y + barHeight/2 + 5} style={{ fill: '#0f172a', fontSize: '14px', fontWeight: 700 }}>
                   {item.value.toLocaleString()}{suffix}
                 </text>
               </g>
@@ -486,7 +486,7 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
             return (
               <g key={i}>
                 <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-                <text x={paddingLeft - 8} y={y + 4} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>{val}</text>
+                <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '14px' }}>{val}</text>
               </g>
             );
           })}
@@ -500,10 +500,10 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
             return (
               <g key={index}>
                 <rect x={x} y={y} width={barWidth} height={Math.max(4, barHeight)} rx={4} fill={barColor} />
-                <text x={x + barWidth/2} y={height - paddingBottom + 16} textAnchor="middle" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 600 }}>
+                <text x={x + barWidth/2} y={height - paddingBottom + 20} textAnchor="middle" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>
                   {item.name}
                 </text>
-                <text x={x + barWidth/2} y={y - 6} textAnchor="middle" style={{ fill: '#0f172a', fontSize: '10px', fontWeight: 700 }}>
+                <text x={x + barWidth/2} y={y - 8} textAnchor="middle" style={{ fill: '#0f172a', fontSize: '14px', fontWeight: 700 }}>
                   {item.value.toLocaleString()}{suffix}
                 </text>
               </g>
@@ -519,13 +519,13 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
 function SvgComparisonBarChart({ data, height = 220 }) {
   if (!data || data.length === 0) return null;
   
-  const paddingLeft = 110;
-  const paddingRight = 65;
+  const paddingLeft = 150;
+  const paddingRight = 200;
   const paddingTop = 15;
-  const paddingBottom = 25;
+  const paddingBottom = 35;
   
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 520;
+  const chartWidth = 800; // Also widen this to 800!
   
   const rowHeight = chartHeight / data.length;
   
@@ -542,7 +542,7 @@ function SvgComparisonBarChart({ data, height = 220 }) {
         
         return (
           <g key={index}>
-            <text x={paddingLeft - 10} y={y + rowHeight/2 - 2} textAnchor="end" style={{ fill: '#334155', fontSize: '10px', fontWeight: 700 }}>
+            <text x={paddingLeft - 10} y={y + rowHeight/2 - 2} textAnchor="end" style={{ fill: '#334155', fontSize: '14px', fontWeight: 700 }}>
               {item.name}
             </text>
             
@@ -553,7 +553,7 @@ function SvgComparisonBarChart({ data, height = 220 }) {
             <rect x={paddingLeft} y={y + 12} width={currentWidth} height={8} rx={4} fill={barColor} />
             
             {/* Legend info or current usage text */}
-            <text x={paddingLeft + Math.max(limitWidth, currentWidth) + 10} y={y + rowHeight/2 + 2} style={{ fill: isExceeded ? '#f43f5e' : '#0f172a', fontSize: '9px', fontWeight: 700 }}>
+            <text x={paddingLeft + Math.max(limitWidth, currentWidth) + 10} y={y + rowHeight/2 + 2} style={{ fill: isExceeded ? '#f43f5e' : '#0f172a', fontSize: '14px', fontWeight: 700 }}>
               {item.current.toLocaleString()} / {item.limit.toLocaleString()} {item.unit}
             </text>
           </g>
@@ -563,13 +563,13 @@ function SvgComparisonBarChart({ data, height = 220 }) {
       {/* Legend */}
       <g transform={`translate(${paddingLeft}, ${height - 10})`}>
         <rect x="0" y="-8" width="12" height="6" rx="3" fill="#e2e8f0" />
-        <text x="16" y="-2" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Allowance</text>
+        <text x="16" y="-2" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Allowance</text>
         
-        <rect x="80" y="-8" width="12" height="6" rx="3" fill="#10b981" />
-        <text x="96" y="-2" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Within Limit</text>
+        <rect x="120" y="-8" width="12" height="6" rx="3" fill="#10b981" />
+        <text x="136" y="-2" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Within Limit</text>
         
-        <rect x="170" y="-8" width="12" height="6" rx="3" fill="#f43f5e" />
-        <text x="186" y="-2" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Exceeded</text>
+        <rect x="250" y="-8" width="12" height="6" rx="3" fill="#f43f5e" />
+        <text x="266" y="-2" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Exceeded</text>
       </g>
     </svg>
   );
@@ -579,12 +579,12 @@ function SvgPredictiveChart({ historical, projected, limit, limitLabel, height =
   const allData = [...historical, ...projected.slice(1)];
   const maxVal = Math.max(...allData, limit) * 1.15;
   const minVal = 0;
-  const paddingLeft = 50;
+  const paddingLeft = 55;
   const paddingRight = 20;
   const paddingTop = 20;
   const paddingBottom = 35;
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 550;
+  const chartWidth = 800;
 
   const histPoints = historical.map((val, index) => {
     const x = paddingLeft + (index / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight);
@@ -627,13 +627,13 @@ function SvgPredictiveChart({ historical, projected, limit, limitLabel, height =
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-            <text x={paddingLeft - 8} y={y + 4} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>{val}</text>
+            <text x={paddingLeft - 8} y={y + 5} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '14px' }}>{val}</text>
           </g>
         );
       })}
 
       <line x1={paddingLeft} y1={limitY} x2={chartWidth - paddingRight} y2={limitY} stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="5 3" />
-      <text x={chartWidth - paddingRight - 5} y={limitY - 6} textAnchor="end" style={{ fill: '#f43f5e', fontSize: '9px', fontWeight: 700 }}>
+      <text x={chartWidth - paddingRight - 5} y={limitY - 8} textAnchor="end" style={{ fill: '#f43f5e', fontSize: '14px', fontWeight: 700 }}>
         LIMIT: {limit} {unit}
       </text>
 
@@ -659,28 +659,28 @@ function SvgPredictiveChart({ historical, projected, limit, limitLabel, height =
         <g>
           <circle cx={intersectionPoint.x} cy={intersectionPoint.y} r="6" fill="#f43f5e" stroke="#ffffff" strokeWidth="2" />
           <line x1={intersectionPoint.x} y1={intersectionPoint.y} x2={intersectionPoint.x} y2={height - paddingBottom} stroke="#f43f5e" strokeWidth="1" strokeDasharray="2 2" />
-          <rect x={intersectionPoint.x - 55} y={intersectionPoint.y - 32} width="110" height="24" rx="4" fill="#0f172a" />
-          <text x={intersectionPoint.x} y={intersectionPoint.y - 17} textAnchor="middle" style={{ fill: '#ffffff', fontSize: '9px', fontWeight: 700 }}>
+          <rect x={intersectionPoint.x - 70} y={intersectionPoint.y - 36} width="140" height="28" rx="4" fill="#0f172a" />
+          <text x={intersectionPoint.x} y={intersectionPoint.y - 18} textAnchor="middle" style={{ fill: '#ffffff', fontSize: '12px', fontWeight: 700 }}>
             Exhaustion Day
           </text>
         </g>
       )}
 
-      <text x={paddingLeft + ((historical.length - 1) / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 700 }}>
+      <text x={paddingLeft + ((historical.length - 1) / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 8} textAnchor="middle" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 700 }}>
         Today
       </text>
-      <text x={paddingLeft} y={height - 10} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '9px' }}>
+      <text x={paddingLeft} y={height - 8} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '14px' }}>
         12M Ago
       </text>
-      <text x={chartWidth - paddingRight} y={height - 10} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '9px' }}>
+      <text x={chartWidth - paddingRight} y={height - 8} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '14px' }}>
         +30D Forecast
       </text>
       
       <g transform={`translate(${paddingLeft + 10}, 10)`}>
         <line x1="0" y1="5" x2="20" y2="5" stroke={strokeColor} strokeWidth="2" />
-        <text x="25" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Historical</text>
-        <line x1="90" y1="5" x2="110" y2="5" stroke={strokeColor} strokeWidth="2" strokeDasharray="3 3" />
-        <text x="115" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Projected</text>
+        <text x="25" y="9" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Historical</text>
+        <line x1="120" y1="5" x2="140" y2="5" stroke={strokeColor} strokeWidth="2" strokeDasharray="3 3" />
+        <text x="145" y="9" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Projected</text>
       </g>
     </svg>
   );
@@ -705,7 +705,7 @@ function SvgSavingsChart({ currentPlanCost, upgradePlanCost, months = 6, height 
   const paddingTop = 20;
   const paddingBottom = 30;
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 500;
+  const chartWidth = 800;
   
   const currentPoints = currentTrend.map((val, index) => {
     const x = paddingLeft + (index / (months - 1)) * (chartWidth - paddingLeft - paddingRight);
@@ -732,7 +732,7 @@ function SvgSavingsChart({ currentPlanCost, upgradePlanCost, months = 6, height 
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-            <text x={paddingLeft - 8} y={y + 4} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>${val}</text>
+            <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '14px' }}>${val}</text>
           </g>
         );
       })}
@@ -753,27 +753,27 @@ function SvgSavingsChart({ currentPlanCost, upgradePlanCost, months = 6, height 
         opacity="0.08"
       />
       
-      <g transform={`translate(${chartWidth - paddingRight - 130}, ${paddingTop + 5})`}>
-        <rect width="120" height="34" rx="4" fill="#0f172a" />
-        <text x="60" y="12" textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '8px', fontWeight: 600, textTransform: 'uppercase' }}>6-Month Savings</text>
-        <text x="60" y="27" textAnchor="middle" style={{ fill: '#10b981', fontSize: '12px', fontWeight: 800 }}>${savings.toLocaleString()}</text>
+      <g transform={`translate(${chartWidth - paddingRight - 150}, ${paddingTop + 5})`}>
+        <rect width="140" height="40" rx="6" fill="#0f172a" />
+        <text x="70" y="15" textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' }}>6-Month Savings</text>
+        <text x="70" y="32" textAnchor="middle" style={{ fill: '#10b981', fontSize: '15px', fontWeight: 800 }}>${savings.toLocaleString()}</text>
       </g>
       
       {Array.from({ length: months }).map((_, i) => {
         const d = new Date(2026, 5 + i, 1);
         const label = d.toLocaleString('default', { month: 'short' });
         return (
-          <text key={i} x={paddingLeft + (i / (months - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
+          <text key={i} x={paddingLeft + (i / (months - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 8} textAnchor="middle" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 500 }}>
             {label}
           </text>
         );
       })}
       
       <g transform={`translate(${paddingLeft + 10}, 10)`}>
-        <line x1="0" y1="5" x2="15" y2="5" stroke="#f43f5e" strokeWidth="2" />
-        <text x="20" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Current (with Overages)</text>
-        <line x1="140" y1="5" x2="155" y2="5" stroke="#10b981" strokeWidth="2" />
-        <text x="160" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Upgraded Plan</text>
+        <line x1="0" y1="5" x2="20" y2="5" stroke="#f43f5e" strokeWidth="2.5" />
+        <text x="25" y="9" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Current (with Overages)</text>
+        <line x1="220" y1="5" x2="240" y2="5" stroke="#10b981" strokeWidth="2.5" />
+        <text x="245" y="9" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Upgraded Plan</text>
       </g>
     </svg>
   );
@@ -786,12 +786,12 @@ function SvgProfitMarginChart({ data, height = 240 }) {
   const maxMargin = Math.max(...margins, 10);
   const minMargin = Math.min(...margins, -10);
   
-  const paddingLeft = 120;
+  const paddingLeft = 160;
   const paddingRight = 45;
   const paddingTop = 15;
   const paddingBottom = 15;
   
-  const chartWidth = 520;
+  const chartWidth = 800;
   const chartHeight = height - paddingTop - paddingBottom;
   const plotWidth = chartWidth - paddingLeft - paddingRight;
   
@@ -818,7 +818,7 @@ function SvgProfitMarginChart({ data, height = 240 }) {
         
         return (
           <g key={index}>
-            <text x={paddingLeft - 10} y={y + rowHeight/2 + 4} textAnchor="end" style={{ fill: '#334155', fontSize: '10px', fontWeight: 700 }}>
+            <text x={paddingLeft - 15} y={y + rowHeight/2 + 5} textAnchor="end" style={{ fill: '#334155', fontSize: '14px', fontWeight: 700 }}>
               {item.name}
             </text>
             
@@ -826,10 +826,10 @@ function SvgProfitMarginChart({ data, height = 240 }) {
             <rect x={barX} y={barY} width={barWidth} height={barHeight} rx={barHeight/2} fill={barColor} />
             
             <text 
-              x={isNegative ? (barX - 6) : (barX + barWidth + 6)} 
-              y={y + rowHeight/2 + 4} 
-              textAnchor={isNegative ? 'end' : 'start'}
-              style={{ fill: barColor, fontSize: '10px', fontWeight: 800 }}
+              x={isNegative ? (zeroX + 8) : (barX + barWidth + 8)} 
+              y={y + rowHeight/2 + 5} 
+              textAnchor="start"
+              style={{ fill: barColor, fontSize: '14px', fontWeight: 800 }}
             >
               {item.margin.toFixed(1)}%
             </text>
@@ -974,42 +974,42 @@ function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
           />
         </svg>
         <div style={{ position: 'absolute', bottom: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontSize: '24px', fontWeight: '800', color: '#1e293b' }}>{total}</span>
-          <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>Total Tenants</span>
+          <span style={{ fontSize: '32px', fontWeight: '800', color: '#1e293b' }}>{total}</span>
+          <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>Total Tenants</span>
         </div>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', marginTop: '16px', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Healthy</span>
+            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Healthy</span>
           </div>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{healthy}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{healthy}</span>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Warning</span>
+            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Warning</span>
           </div>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{warning}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{warning}</span>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f43f5e' }} />
-            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Critical</span>
+            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f43f5e' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Critical</span>
           </div>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{critical}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{critical}</span>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#be123c' }} />
-            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Loss-Making</span>
+            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#be123c' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Loss-Making</span>
           </div>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{loss}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{loss}</span>
         </div>
       </div>
     </div>
