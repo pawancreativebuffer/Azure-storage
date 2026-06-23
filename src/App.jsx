@@ -444,9 +444,610 @@ function SvgDonutChart({ data, colors }) {
   );
 }
 
+function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = false, suffix = '' }) {
+  if (!data || data.length === 0) return null;
+  const values = data.map(d => d.value);
+  const maxVal = Math.max(...values) * 1.15 || 100;
+  const paddingLeft = isHorizontal ? 120 : 45;
+  const paddingRight = 20;
+  const paddingTop = 15;
+  const paddingBottom = isHorizontal ? 20 : 40;
+
+  const chartHeight = height - paddingTop - paddingBottom;
+  const chartWidth = 500;
+
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
+      {isHorizontal ? (
+        <>
+          {data.map((item, index) => {
+            const barWidth = ((item.value) / maxVal) * (chartWidth - paddingLeft - paddingRight);
+            const barHeight = Math.min(24, (chartHeight / data.length) * 0.6);
+            const y = paddingTop + index * (chartHeight / data.length) + (chartHeight / data.length - barHeight) / 2;
+            const barColor = colors[index % colors.length] || colors[0];
+            
+            return (
+              <g key={index}>
+                <text x={paddingLeft - 10} y={y + barHeight/2 + 4} textAnchor="end" style={{ fill: '#334155', fontSize: '11px', fontWeight: 600 }}>
+                  {item.name}
+                </text>
+                <rect x={paddingLeft} y={y} width={chartWidth - paddingLeft - paddingRight} height={barHeight} rx={barHeight/2} fill="#f1f5f9" />
+                <rect x={paddingLeft} y={y} width={Math.max(barHeight, barWidth)} height={barHeight} rx={barHeight/2} fill={barColor} />
+                <text x={paddingLeft + barWidth + 8} y={y + barHeight/2 + 4} style={{ fill: '#0f172a', fontSize: '11px', fontWeight: 700 }}>
+                  {item.value.toLocaleString()}{suffix}
+                </text>
+              </g>
+            );
+          })}
+          <line x1={paddingLeft} y1={paddingTop} x2={paddingLeft} y2={height - paddingBottom} stroke="#cbd5e1" strokeWidth="1.5" />
+        </>
+      ) : (
+        <>
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+            const y = paddingTop + ratio * chartHeight;
+            const val = Math.round(maxVal - ratio * maxVal);
+            return (
+              <g key={i}>
+                <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
+                <text x={paddingLeft - 8} y={y + 4} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>{val}</text>
+              </g>
+            );
+          })}
+          {data.map((item, index) => {
+            const barHeight = (item.value / maxVal) * chartHeight;
+            const barWidth = Math.min(32, (chartWidth - paddingLeft - paddingRight) / data.length * 0.5);
+            const x = paddingLeft + index * ((chartWidth - paddingLeft - paddingRight) / data.length) + ((chartWidth - paddingLeft - paddingRight) / data.length - barWidth) / 2;
+            const y = height - paddingBottom - barHeight;
+            const barColor = colors[index % colors.length] || colors[0];
+            
+            return (
+              <g key={index}>
+                <rect x={x} y={y} width={barWidth} height={Math.max(4, barHeight)} rx={4} fill={barColor} />
+                <text x={x + barWidth/2} y={height - paddingBottom + 16} textAnchor="middle" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 600 }}>
+                  {item.name}
+                </text>
+                <text x={x + barWidth/2} y={y - 6} textAnchor="middle" style={{ fill: '#0f172a', fontSize: '10px', fontWeight: 700 }}>
+                  {item.value.toLocaleString()}{suffix}
+                </text>
+              </g>
+            );
+          })}
+          <line x1={paddingLeft} y1={height - paddingBottom} x2={chartWidth - paddingRight} y2={height - paddingBottom} stroke="#cbd5e1" strokeWidth="1.5" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function SvgComparisonBarChart({ data, height = 220 }) {
+  if (!data || data.length === 0) return null;
+  
+  const paddingLeft = 110;
+  const paddingRight = 65;
+  const paddingTop = 15;
+  const paddingBottom = 25;
+  
+  const chartHeight = height - paddingTop - paddingBottom;
+  const chartWidth = 520;
+  
+  const rowHeight = chartHeight / data.length;
+  
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
+      {data.map((item, index) => {
+        const y = paddingTop + index * rowHeight;
+        const maxVal = Math.max(item.limit, item.current) * 1.1;
+        const limitWidth = (item.limit / maxVal) * (chartWidth - paddingLeft - paddingRight);
+        const currentWidth = (item.current / maxVal) * (chartWidth - paddingLeft - paddingRight);
+        
+        const isExceeded = item.current > item.limit;
+        const barColor = isExceeded ? '#f43f5e' : '#10b981';
+        
+        return (
+          <g key={index}>
+            <text x={paddingLeft - 10} y={y + rowHeight/2 - 2} textAnchor="end" style={{ fill: '#334155', fontSize: '10px', fontWeight: 700 }}>
+              {item.name}
+            </text>
+            
+            {/* Allowance Bar (Grey) */}
+            <rect x={paddingLeft} y={y + 2} width={limitWidth} height={8} rx={4} fill="#e2e8f0" />
+            
+            {/* Consumption Bar */}
+            <rect x={paddingLeft} y={y + 12} width={currentWidth} height={8} rx={4} fill={barColor} />
+            
+            {/* Legend info or current usage text */}
+            <text x={paddingLeft + Math.max(limitWidth, currentWidth) + 10} y={y + rowHeight/2 + 2} style={{ fill: isExceeded ? '#f43f5e' : '#0f172a', fontSize: '9px', fontWeight: 700 }}>
+              {item.current.toLocaleString()} / {item.limit.toLocaleString()} {item.unit}
+            </text>
+          </g>
+        );
+      })}
+      
+      {/* Legend */}
+      <g transform={`translate(${paddingLeft}, ${height - 10})`}>
+        <rect x="0" y="-8" width="12" height="6" rx="3" fill="#e2e8f0" />
+        <text x="16" y="-2" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Allowance</text>
+        
+        <rect x="80" y="-8" width="12" height="6" rx="3" fill="#10b981" />
+        <text x="96" y="-2" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Within Limit</text>
+        
+        <rect x="170" y="-8" width="12" height="6" rx="3" fill="#f43f5e" />
+        <text x="186" y="-2" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Exceeded</text>
+      </g>
+    </svg>
+  );
+}
+
+function SvgPredictiveChart({ historical, projected, limit, limitLabel, height = 200, strokeColor = '#2563eb', unit = 'GB' }) {
+  const allData = [...historical, ...projected.slice(1)];
+  const maxVal = Math.max(...allData, limit) * 1.15;
+  const minVal = 0;
+  const paddingLeft = 50;
+  const paddingRight = 20;
+  const paddingTop = 20;
+  const paddingBottom = 35;
+  const chartHeight = height - paddingTop - paddingBottom;
+  const chartWidth = 550;
+
+  const histPoints = historical.map((val, index) => {
+    const x = paddingLeft + (index / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight);
+    const y = height - paddingBottom - ((val - minVal) / (maxVal - minVal)) * chartHeight;
+    return { x, y, val };
+  });
+
+  const projPoints = projected.map((val, index) => {
+    const overallIndex = historical.length - 1 + index;
+    const x = paddingLeft + (overallIndex / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight);
+    const y = height - paddingBottom - ((val - minVal) / (maxVal - minVal)) * chartHeight;
+    return { x, y, val };
+  });
+
+  const histPathD = histPoints.reduce((acc, p, i) => i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, '');
+  const projPathD = projPoints.reduce((acc, p, i) => i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, '');
+
+  const limitY = height - paddingBottom - ((limit - minVal) / (maxVal - minVal)) * chartHeight;
+
+  let intersectionPoint = null;
+  for (let i = 0; i < projPoints.length; i++) {
+    if (projPoints[i].val >= limit) {
+      intersectionPoint = projPoints[i];
+      break;
+    }
+  }
+
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
+      <defs>
+        <linearGradient id={`grad-${strokeColor.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={strokeColor} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+        const y = paddingTop + ratio * chartHeight;
+        const val = Math.round(maxVal - ratio * maxVal);
+        return (
+          <g key={i}>
+            <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
+            <text x={paddingLeft - 8} y={y + 4} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>{val}</text>
+          </g>
+        );
+      })}
+
+      <line x1={paddingLeft} y1={limitY} x2={chartWidth - paddingRight} y2={limitY} stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="5 3" />
+      <text x={chartWidth - paddingRight - 5} y={limitY - 6} textAnchor="end" style={{ fill: '#f43f5e', fontSize: '9px', fontWeight: 700 }}>
+        LIMIT: {limit} {unit}
+      </text>
+
+      {histPoints.length > 0 && (
+        <path
+          d={`${histPathD} L ${histPoints[histPoints.length - 1].x} ${height - paddingBottom} L ${histPoints[0].x} ${height - paddingBottom} Z`}
+          fill={`url(#grad-${strokeColor.replace('#', '')})`}
+        />
+      )}
+
+      {projPoints.length > 0 && (
+        <path
+          d={`${projPathD} L ${projPoints[projPoints.length - 1].x} ${height - paddingBottom} L ${projPoints[0].x} ${height - paddingBottom} Z`}
+          fill={`url(#grad-${strokeColor.replace('#', '')})`}
+          opacity="0.08"
+        />
+      )}
+
+      <path d={histPathD} fill="none" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
+      <path d={projPathD} fill="none" stroke={strokeColor} strokeWidth="2.5" strokeDasharray="4 4" strokeLinecap="round" />
+
+      {intersectionPoint && (
+        <g>
+          <circle cx={intersectionPoint.x} cy={intersectionPoint.y} r="6" fill="#f43f5e" stroke="#ffffff" strokeWidth="2" />
+          <line x1={intersectionPoint.x} y1={intersectionPoint.y} x2={intersectionPoint.x} y2={height - paddingBottom} stroke="#f43f5e" strokeWidth="1" strokeDasharray="2 2" />
+          <rect x={intersectionPoint.x - 55} y={intersectionPoint.y - 32} width="110" height="24" rx="4" fill="#0f172a" />
+          <text x={intersectionPoint.x} y={intersectionPoint.y - 17} textAnchor="middle" style={{ fill: '#ffffff', fontSize: '9px', fontWeight: 700 }}>
+            Exhaustion Day
+          </text>
+        </g>
+      )}
+
+      <text x={paddingLeft + ((historical.length - 1) / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 700 }}>
+        Today
+      </text>
+      <text x={paddingLeft} y={height - 10} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '9px' }}>
+        12M Ago
+      </text>
+      <text x={chartWidth - paddingRight} y={height - 10} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '9px' }}>
+        +30D Forecast
+      </text>
+      
+      <g transform={`translate(${paddingLeft + 10}, 10)`}>
+        <line x1="0" y1="5" x2="20" y2="5" stroke={strokeColor} strokeWidth="2" />
+        <text x="25" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Historical</text>
+        <line x1="90" y1="5" x2="110" y2="5" stroke={strokeColor} strokeWidth="2" strokeDasharray="3 3" />
+        <text x="115" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Projected</text>
+      </g>
+    </svg>
+  );
+}
+
+function SvgSavingsChart({ currentPlanCost, upgradePlanCost, months = 6, height = 200 }) {
+  const currentTrend = [];
+  const upgradeTrend = [];
+  let currentSum = 0;
+  let upgradeSum = 0;
+  
+  for (let i = 1; i <= months; i++) {
+    currentSum += currentPlanCost;
+    upgradeSum += upgradePlanCost;
+    currentTrend.push(currentSum);
+    upgradeTrend.push(upgradeSum);
+  }
+  
+  const maxVal = Math.max(...currentTrend) * 1.1;
+  const paddingLeft = 55;
+  const paddingRight = 20;
+  const paddingTop = 20;
+  const paddingBottom = 30;
+  const chartHeight = height - paddingTop - paddingBottom;
+  const chartWidth = 500;
+  
+  const currentPoints = currentTrend.map((val, index) => {
+    const x = paddingLeft + (index / (months - 1)) * (chartWidth - paddingLeft - paddingRight);
+    const y = height - paddingBottom - (val / maxVal) * chartHeight;
+    return { x, y, val };
+  });
+  
+  const upgradePoints = upgradeTrend.map((val, index) => {
+    const x = paddingLeft + (index / (months - 1)) * (chartWidth - paddingLeft - paddingRight);
+    const y = height - paddingBottom - (val / maxVal) * chartHeight;
+    return { x, y, val };
+  });
+  
+  const currentPath = currentPoints.reduce((acc, p, i) => i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, '');
+  const upgradePath = upgradePoints.reduce((acc, p, i) => i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, '');
+  
+  const savings = currentSum - upgradeSum;
+  
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+        const y = paddingTop + ratio * chartHeight;
+        const val = Math.round(maxVal - ratio * maxVal);
+        return (
+          <g key={i}>
+            <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
+            <text x={paddingLeft - 8} y={y + 4} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>${val}</text>
+          </g>
+        );
+      })}
+      
+      <path d={currentPath} fill="none" stroke="#f43f5e" strokeWidth="2.5" strokeLinecap="round" />
+      <path d={upgradePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
+      
+      {currentPoints.map((p, i) => (
+        <circle key={`c-${i}`} cx={p.x} cy={p.y} r="3" fill="#f43f5e" />
+      ))}
+      {upgradePoints.map((p, i) => (
+        <circle key={`u-${i}`} cx={p.x} cy={p.y} r="3" fill="#10b981" />
+      ))}
+      
+      <path
+        d={`${currentPath} L ${upgradePoints[upgradePoints.length - 1].x} ${upgradePoints[upgradePoints.length - 1].y} ${[...upgradePoints].reverse().map(p => `L ${p.x} ${p.y}`).join(' ')} Z`}
+        fill="#10b981"
+        opacity="0.08"
+      />
+      
+      <g transform={`translate(${chartWidth - paddingRight - 130}, ${paddingTop + 5})`}>
+        <rect width="120" height="34" rx="4" fill="#0f172a" />
+        <text x="60" y="12" textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '8px', fontWeight: 600, textTransform: 'uppercase' }}>6-Month Savings</text>
+        <text x="60" y="27" textAnchor="middle" style={{ fill: '#10b981', fontSize: '12px', fontWeight: 800 }}>${savings.toLocaleString()}</text>
+      </g>
+      
+      {Array.from({ length: months }).map((_, i) => (
+        <text key={i} x={paddingLeft + (i / (months - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
+          Month {i + 1}
+        </text>
+      ))}
+      
+      <g transform={`translate(${paddingLeft + 10}, 10)`}>
+        <line x1="0" y1="5" x2="15" y2="5" stroke="#f43f5e" strokeWidth="2" />
+        <text x="20" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Current (with Overages)</text>
+        <line x1="140" y1="5" x2="155" y2="5" stroke="#10b981" strokeWidth="2" />
+        <text x="160" y="9" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 600 }}>Upgraded Plan</text>
+      </g>
+    </svg>
+  );
+}
+
+function SvgProfitMarginChart({ data, height = 240 }) {
+  if (!data || data.length === 0) return null;
+  
+  const margins = data.map(d => d.margin);
+  const maxMargin = Math.max(...margins, 10);
+  const minMargin = Math.min(...margins, -10);
+  
+  const paddingLeft = 120;
+  const paddingRight = 45;
+  const paddingTop = 15;
+  const paddingBottom = 15;
+  
+  const chartWidth = 520;
+  const chartHeight = height - paddingTop - paddingBottom;
+  const plotWidth = chartWidth - paddingLeft - paddingRight;
+  
+  const range = maxMargin - minMargin;
+  const zeroRatio = minMargin < 0 ? (-minMargin / range) : 0;
+  const zeroX = paddingLeft + zeroRatio * plotWidth;
+  
+  const rowHeight = chartHeight / data.length;
+  
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
+      <line x1={zeroX} y1={paddingTop} x2={zeroX} y2={height - paddingBottom} stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" />
+      
+      {data.map((item, index) => {
+        const y = paddingTop + index * rowHeight;
+        const barHeight = Math.min(18, rowHeight * 0.6);
+        const barY = y + (rowHeight - barHeight) / 2;
+        
+        const barWidth = (Math.abs(item.margin) / range) * plotWidth;
+        
+        const isNegative = item.margin < 0;
+        const barX = isNegative ? (zeroX - barWidth) : zeroX;
+        const barColor = isNegative ? '#f43f5e' : '#10b981';
+        
+        return (
+          <g key={index}>
+            <text x={paddingLeft - 10} y={y + rowHeight/2 + 4} textAnchor="end" style={{ fill: '#334155', fontSize: '10px', fontWeight: 700 }}>
+              {item.name}
+            </text>
+            
+            <rect x={paddingLeft} y={barY} width={plotWidth} height={barHeight} rx={barHeight/2} fill="#f8fafc" opacity="0.5" stroke="#e2e8f0" strokeWidth="0.5" />
+            <rect x={barX} y={barY} width={barWidth} height={barHeight} rx={barHeight/2} fill={barColor} />
+            
+            <text 
+              x={isNegative ? (barX - 6) : (barX + barWidth + 6)} 
+              y={y + rowHeight/2 + 4} 
+              textAnchor={isNegative ? 'end' : 'start'}
+              style={{ fill: barColor, fontSize: '10px', fontWeight: 800 }}
+            >
+              {item.margin.toFixed(1)}%
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function SvgDualLineChart({ line1, line2, labels, line1Label, line2Label, line1Color = '#2563eb', line2Color = '#e91e63', height = 220 }) {
+  if (!line1 || line1.length === 0) return null;
+  
+  const max1 = Math.max(...line1) * 1.15 || 100;
+  const max2 = Math.max(...line2) * 1.15 || 100;
+  
+  const paddingLeft = 45;
+  const paddingRight = 45;
+  const paddingTop = 25;
+  const paddingBottom = 30;
+  
+  const chartHeight = height - paddingTop - paddingBottom;
+  const chartWidth = 500;
+  
+  const points1 = line1.map((val, index) => {
+    const x = paddingLeft + (index / (line1.length - 1)) * (chartWidth - paddingLeft - paddingRight);
+    const y = height - paddingBottom - (val / max1) * chartHeight;
+    return { x, y, val };
+  });
+  
+  const points2 = line2.map((val, index) => {
+    const x = paddingLeft + (index / (line2.length - 1)) * (chartWidth - paddingLeft - paddingRight);
+    const y = height - paddingBottom - (val / max2) * chartHeight;
+    return { x, y, val };
+  });
+  
+  const path1 = points1.reduce((acc, p, i) => i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, '');
+  const path2 = points2.reduce((acc, p, i) => i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, '');
+  
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+        const y = paddingTop + ratio * chartHeight;
+        const val1 = Math.round(max1 - ratio * max1);
+        const val2 = Math.round(max2 - ratio * max2);
+        return (
+          <g key={i}>
+            <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
+            <text x={paddingLeft - 8} y={y + 4} textAnchor="end" style={{ fill: line1Color, fontSize: '9px', fontWeight: 600 }}>{val1}</text>
+            <text x={chartWidth - paddingRight + 8} y={y + 4} textAnchor="start" style={{ fill: line2Color, fontSize: '9px', fontWeight: 600 }}>{val2}</text>
+          </g>
+        );
+      })}
+      
+      <path d={path1} fill="none" stroke={line1Color} strokeWidth="2" strokeLinecap="round" />
+      <path d={path2} fill="none" stroke={line2Color} strokeWidth="2" strokeLinecap="round" />
+      
+      {points1.map((p, i) => (
+        <circle key={`l1-${i}`} cx={p.x} cy={p.y} r="3" fill="#ffffff" stroke={line1Color} strokeWidth="1.5" />
+      ))}
+      {points2.map((p, i) => (
+        <circle key={`l2-${i}`} cx={p.x} cy={p.y} r="3" fill="#ffffff" stroke={line2Color} strokeWidth="1.5" />
+      ))}
+      
+      {points1.map((p, i) => (
+        (points1.length < 8 || i % 2 === 0 || i === points1.length - 1) && (
+          <text key={`lbl-${i}`} x={p.x} y={height - 10} textAnchor="middle" style={{ fill: '#64748b', fontSize: '9px', fontWeight: 500 }}>
+            {labels[i]}
+          </text>
+        )
+      ))}
+      
+      <g transform={`translate(${paddingLeft}, 12)`}>
+        <circle cx="5" cy="5" r="4" fill={line1Color} />
+        <text x="14" y="8" style={{ fill: '#334155', fontSize: '9px', fontWeight: 700 }}>{line1Label}</text>
+        
+        <circle cx="120" cy="5" r="4" fill={line2Color} />
+        <text x="129" y="8" style={{ fill: '#334155', fontSize: '9px', fontWeight: 700 }}>{line2Label}</text>
+      </g>
+    </svg>
+  );
+}
+
+function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
+  const total = healthy + warning + critical + loss;
+  if (total === 0) return null;
+  
+  const healthyPct = healthy / total;
+  const warningPct = warning / total;
+  const criticalPct = critical / total;
+  const lossPct = loss / total;
+  
+  const r = 50;
+  const circ = Math.PI * r; // ~157.08
+  
+  const strokeWidth = 14;
+  
+  const healthyLen = healthyPct * circ;
+  const warningLen = warningPct * circ;
+  const criticalLen = criticalPct * circ;
+  const lossLen = lossPct * circ;
+  
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+      <div style={{ position: 'relative', width: '160px', height: '100px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+        <svg width="160" height="90" viewBox="0 0 120 70">
+          <path d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="#f1f5f9" strokeWidth={strokeWidth} strokeLinecap="round" />
+          
+          <path 
+            d="M 10 60 A 50 50 0 0 1 110 60" 
+            fill="none" 
+            stroke="#10b981" 
+            strokeWidth={strokeWidth} 
+            strokeDasharray={`${healthyLen} 200`}
+            strokeDashoffset="0"
+            strokeLinecap="round"
+          />
+          <path 
+            d="M 10 60 A 50 50 0 0 1 110 60" 
+            fill="none" 
+            stroke="#f59e0b" 
+            strokeWidth={strokeWidth} 
+            strokeDasharray={`${warningLen} 200`}
+            strokeDashoffset={`-${healthyLen}`}
+            strokeLinecap={warningLen > 0 ? "round" : "butt"}
+          />
+          <path 
+            d="M 10 60 A 50 50 0 0 1 110 60" 
+            fill="none" 
+            stroke="#f43f5e" 
+            strokeWidth={strokeWidth} 
+            strokeDasharray={`${criticalLen} 200`}
+            strokeDashoffset={`-${healthyLen + warningLen}`}
+            strokeLinecap={criticalLen > 0 ? "round" : "butt"}
+          />
+          <path 
+            d="M 10 60 A 50 50 0 0 1 110 60" 
+            fill="none" 
+            stroke="#be123c" 
+            strokeWidth={strokeWidth} 
+            strokeDasharray={`${lossLen} 200`}
+            strokeDashoffset={`-${healthyLen + warningLen + criticalLen}`}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div style={{ position: 'absolute', bottom: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>{total}</span>
+          <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>Total Tenants</span>
+        </div>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginTop: '12px', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Healthy</span>
+          </div>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{healthy}</span>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Warning</span>
+          </div>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{warning}</span>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f43f5e' }} />
+            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Critical</span>
+          </div>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{critical}</span>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#be123c' }} />
+            <span style={{ fontSize: '10px', fontWeight: 600, color: '#475569' }}>Loss-Making</span>
+          </div>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#0f172a' }}>{loss}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('client'); // 'client' or 'admin'
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
+  const [clientActiveSection, setClientActiveSection] = useState('billing'); // 'billing', 'forecast', 'infrastructure'
+  const [adminActiveSection, setAdminActiveSection] = useState('profitability'); // 'profitability', 'consumption', 'risk'
+  const [customers, setCustomers] = useState(() => {
+    return INITIAL_CUSTOMERS.map(c => {
+      const storageUsedPct = (c.usageDetails.storage.current / c.usageDetails.storage.limit) * 100;
+      const downloadsUsedPct = (c.usageDetails.downloads.current / c.usageDetails.downloads.limit) * 100;
+      const bandwidthUsedPct = (c.usageDetails.bandwidth.current / c.usageDetails.bandwidth.limit) * 100;
+      const maxUsedPct = Math.max(storageUsedPct, downloadsUsedPct, bandwidthUsedPct);
+      const usagePercent = Math.round((storageUsedPct + downloadsUsedPct + bandwidthUsedPct) / 3);
+      
+      const profit = (c.monthlyFee + c.overages) - c.azureCost;
+      const margin = (profit / (c.monthlyFee + c.overages)) * 100;
+      
+      let status = 'healthy';
+      if (margin < 0) {
+        status = 'loss';
+      } else if (maxUsedPct >= 90) {
+        status = 'critical';
+      } else if (maxUsedPct >= 80) {
+        status = 'warning';
+      }
+      
+      return {
+        ...c,
+        status,
+        usagePercent
+      };
+    });
+  });
   const [selectedCustomerId, setSelectedCustomerId] = useState('acme');
   const [drawerCustomerId, setDrawerCustomerId] = useState(null);
   
@@ -554,6 +1155,38 @@ export default function App() {
     ];
   }, [customers]);
 
+  // Aggregate Trends & Status Counts for Admin Charts
+  const globalStorageTrend = useMemo(() => {
+    const trend = Array(12).fill(0);
+    customers.forEach(c => {
+      c.storageTrend.forEach((val, idx) => {
+        trend[idx] += val;
+      });
+    });
+    return trend;
+  }, [customers]);
+  
+  const globalCostTrend = useMemo(() => {
+    const trend = Array(12).fill(0);
+    customers.forEach(c => {
+      c.costTrend.forEach((val, idx) => {
+        trend[idx] += val;
+      });
+    });
+    return trend;
+  }, [customers]);
+
+  const statusCounts = useMemo(() => {
+    let healthy = 0, warning = 0, critical = 0, loss = 0;
+    customers.forEach(c => {
+      if (c.status === 'healthy') healthy++;
+      else if (c.status === 'warning') warning++;
+      else if (c.status === 'critical') critical++;
+      else if (c.status === 'loss') loss++;
+    });
+    return { healthy, warning, critical, loss };
+  }, [customers]);
+
   // Edit/Modify Quotas inside Drawer
   const handleUpdateQuota = (field, newLimit) => {
     if (!drawerCustomerId) return;
@@ -641,7 +1274,8 @@ export default function App() {
         overages: overageSum,
         status: newStatus,
         alerts: newAlerts,
-        quotaScore: Math.round(100 - (maxUsedPct / 5)) // mock score
+        quotaScore: Math.round(100 - (maxUsedPct / 5)), // mock score
+        usagePercent: Math.round((storageUsedPct + downloadsUsedPct + bandwidthUsedPct) / 3)
       };
     }));
 
@@ -675,6 +1309,34 @@ export default function App() {
         return <span className="status-badge loss"><TrendingDown size={12} /> Loss Making</span>;
       default:
         return null;
+    }
+  };
+
+  const getRecommendation = (c) => {
+    if (!c) return { nextPlan: null, text: '' };
+    if (c.planName.includes('Custom')) {
+      return {
+        nextPlan: null,
+        text: `Optimize custom egress routing and set alerts for peak bandwidth to control resource costs on the custom plan.`
+      };
+    } else if (c.planName.includes('Enterprise')) {
+      return {
+        nextPlan: 'Enterprise Custom',
+        fee: 2500,
+        text: `Upgrading this customer to Enterprise Custom ($2,500/mo) would provide dedicated premium egress bandwidth and custom SLA support.`
+      };
+    } else if (c.planName.includes('Plus')) {
+      return {
+        nextPlan: 'Business Enterprise Plan',
+        fee: 1200,
+        text: `Upgrading this customer to Business Enterprise Plan ($1,200/mo) would double bandwidth limits and provide 500k monthly downloads.`
+      };
+    } else {
+      return {
+        nextPlan: 'Business Plus Plan',
+        fee: 800,
+        text: `Upgrading this customer to Business Plus Plan ($800/mo) would increase storage capacity and eliminate current overage costs.`
+      };
     }
   };
 
@@ -850,669 +1512,945 @@ export default function App() {
       </div>
 
       {/* DASHBOARD CONTENT BODY */}
-      <main className="dashboard-content animate-fade-in" key={activeTab}>
+      {/* SIDEBAR + MAIN CONTENT LAYOUT */}
+      <div className="dashboard-layout">
         
-        {/* PAGE 1: CLIENT USAGE PORTAL */}
-        {activeTab === 'client' && (
-          <div>
-            {/* Title & Metadata Row */}
-            <div className="dashboard-header-row">
-              <div>
-                <h1 className="page-title">Usage & Billing Management</h1>
-                <p className="page-subtitle">Granular resource analysis and actual Azure cloud consumption metrics.</p>
-              </div>
-              
-              <div className="meta-details">
-                <div className="meta-item">
-                  <span className="meta-label">Billing Period</span>
-                  <span className="meta-value">{currentCustomer.billingPeriod}</span>
-                </div>
-                <div className="meta-item" style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
-                  <span className="meta-label">Next Invoice Date</span>
-                  <span className="meta-value">{currentCustomer.nextInvoiceDate}</span>
-                </div>
-                <div className="meta-item" style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
-                  <span className="meta-label">Active Quota Status</span>
-                  <span className="meta-value" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span className="status-badge healthy" style={{ padding: '2px 6px', fontSize: '10px' }}>ACTIVE</span>
-                  </span>
-                </div>
-              </div>
-            </div>
+        {/* LEFT SIDEBAR */}
+        <aside className="sidebar">
+          {activeTab === 'client' ? (
+            <>
+              <div className="sidebar-menu-title">Client Portal</div>
+              <button 
+                className={`sidebar-item ${clientActiveSection === 'billing' ? 'active' : ''}`}
+                onClick={() => setClientActiveSection('billing')}
+              >
+                <CreditCard size={15} />
+                <span>Billing & Consumption</span>
+              </button>
+              <button 
+                className={`sidebar-item ${clientActiveSection === 'forecast' ? 'active' : ''}`}
+                onClick={() => setClientActiveSection('forecast')}
+              >
+                <TrendingUp size={15} />
+                <span>Predictive Forecast</span>
+              </button>
+              <button 
+                className={`sidebar-item ${clientActiveSection === 'infrastructure' ? 'active' : ''}`}
+                onClick={() => setClientActiveSection('infrastructure')}
+              >
+                <Layers size={15} />
+                <span>Granular Azure Consumption</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="sidebar-menu-title">Admin Cost Portal</div>
+              <button 
+                className={`sidebar-item ${adminActiveSection === 'profitability' ? 'active' : ''}`}
+                onClick={() => setAdminActiveSection('profitability')}
+              >
+                <DollarSign size={15} />
+                <span>Profitability Overview</span>
+              </button>
+              <button 
+                className={`sidebar-item ${adminActiveSection === 'consumption' ? 'active' : ''}`}
+                onClick={() => setAdminActiveSection('consumption')}
+              >
+                <Cpu size={15} />
+                <span>Global Resource Consumption</span>
+              </button>
+              <button 
+                className={`sidebar-item ${adminActiveSection === 'risk' ? 'active' : ''}`}
+                onClick={() => setAdminActiveSection('risk')}
+              >
+                <AlertTriangle size={15} />
+                <span>Risk & Abuse Monitoring</span>
+              </button>
+            </>
+          )}
+        </aside>
 
-            {/* KPI Cards Grid */}
-            <div className="kpi-grid">
-              <div className="card kpi-card">
-                <div className="kpi-header">
-                  <span>Monthly Plan Fee</span>
-                  <CreditCard size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">${currentCustomer.monthlyFee}</span>
-                <div className="kpi-footer">
-                  <span className="text-muted">Subscription base cost</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card pink">
-                <div className="kpi-header">
-                  <span>Current Usage Cost</span>
-                  <DollarSign size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">${currentCustomer.monthlyFee + currentCustomer.overages}</span>
-                <div className="kpi-footer">
-                  <span className="text-muted">Plan fee + Azure overages</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card coral">
-                <div className="kpi-header">
-                  <span>Overage Charges</span>
-                  <AlertTriangle size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">${currentCustomer.overages}</span>
-                <div className="kpi-footer">
-                  {currentCustomer.overages > 0 ? (
-                    <span className="kpi-trend-down"><TrendingUp size={12} /> Consumption exceeded</span>
-                  ) : (
-                    <span className="kpi-trend-up"><CheckCircle2 size={12} /> Inside plan limits</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="card kpi-card">
-                <div className="kpi-header">
-                  <span>Estimated Final Bill</span>
-                  <CreditCard size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">{currentCustomer.forecast.invoice}</span>
-                <div className="kpi-footer font-medium">
-                  <span className="text-muted">Projected end-of-month</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card yellow">
-                <div className="kpi-header">
-                  <span>Remaining Quota</span>
-                  <Database size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">
-                  {Math.round(100 - (currentCustomer.usageDetails.storage.current / currentCustomer.usageDetails.storage.limit * 100))}%
-                </span>
-                <div className="kpi-footer">
-                  <span className="text-muted">Storage remaining capacity</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card green">
-                <div className="kpi-header">
-                  <span>Usage Health Score</span>
-                  <Activity size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value text-green">{currentCustomer.quotaScore}%</span>
-                <div className="kpi-footer">
-                  <span className="text-muted">Overall quota health</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Layout: Progress list (Left) & Alerts list (Right) */}
-            <div className="dashboard-grid-2-1">
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><Sliders size={16} className="text-blue" /> Plan Resource Allocation & Usage</span>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Warning thresholds apply at 80% and 90%</span>
-                </div>
-
-                <div className="progress-list">
-                  {Object.entries(currentCustomer.usageDetails).map(([key, detail]) => {
-                    const percentage = Math.round((detail.current / detail.limit) * 100);
-                    const colorClass = getProgressColorClass(percentage);
-                    
-                    return (
-                      <div className="progress-item" key={key}>
-                        <div className="progress-label-row">
-                          <span className="progress-name" style={{ textTransform: 'capitalize' }}>
-                            {key.replace(/([A-Z])/g, ' $1')}
-                          </span>
-                          <span className="progress-stats">
-                            {detail.current.toLocaleString()} / {detail.limit.toLocaleString()} {detail.unit}
-                            <span style={{ marginLeft: '10px' }} className={`progress-percentage text-${colorClass}`}>
-                              {percentage}% Used
-                            </span>
-                          </span>
-                        </div>
-                        <div className="progress-bar-bg">
-                          <div 
-                            className={`progress-bar-fill ${colorClass}`}
-                            style={{ width: `${Math.min(100, percentage)}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        {/* RIGHT MAIN CONTENT AREA */}
+        <main className="main-content animate-fade-in" key={`${activeTab}-${activeTab === 'client' ? clientActiveSection : adminActiveSection}`}>
+          
+          {/* PAGE 1: CLIENT USAGE PORTAL */}
+          {activeTab === 'client' && (
+            <div>
+              {/* Section 1: Billing & Consumption Overview */}
+              {clientActiveSection === 'billing' && (
                 <div>
-                  <div className="section-title-bar">
-                    <span className="section-title"><AlertTriangle size={16} className="text-pink" /> Billing & Usage Alerts</span>
-                  </div>
-                  <div className="alerts-list">
-                    {currentCustomer.alerts.map((alert) => (
-                      <div className={`alert-card ${alert.type}`} key={alert.id}>
-                        <AlertTriangle size={16} className="alert-icon" />
-                        <span className="alert-message">{alert.msg}</span>
+                  {/* Title & Metadata Row */}
+                  <div className="dashboard-header-row">
+                    <div>
+                      <h1 className="page-title">Billing & Consumption Overview</h1>
+                      <p className="page-subtitle">Granular resource analysis and actual Azure cloud consumption metrics.</p>
+                    </div>
+                    
+                    <div className="meta-details">
+                      <div className="meta-item">
+                        <span className="meta-label">Billing Period</span>
+                        <span className="meta-value">{currentCustomer.billingPeriod}</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="upgrade-card" style={{ marginTop: '20px' }}>
-                  <span className="upgrade-title">
-                    <Sparkles size={16} className="text-pink" /> Optimization Suggestion
-                  </span>
-                  <p className="upgrade-desc">
-                    Based on your current consumption patterns, upgrading to <span className="upgrade-highlight">Business Plus Plan</span> would reduce your projected overage charges by <strong style={{ color: '#ffffff' }}>32%</strong>.
-                  </p>
-                  <div className="upgrade-actions">
-                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>*Saves approx $80/month</span>
-                    <button className="btn btn-pink upgrade-cta" onClick={() => setUpgradeModalOpen(true)}>Upgrade Options</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Layout: Detailed breakdown table */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-              <div className="section-title-bar">
-                <span className="section-title"><Layers size={16} className="text-blue" /> Granular Azure Infrastructure Consumption</span>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Actual resource metrics powered by Microsoft Azure Cost API</span>
-              </div>
-              <div className="table-responsive">
-                <table className="ticket-table">
-                  <thead>
-                    <tr>
-                      <th>Service Resource</th>
-                      <th>Included Monthly Allowance</th>
-                      <th>Current Billing Consumption</th>
-                      <th>Remaining Units</th>
-                      <th>Overage Quantity</th>
-                      <th className="text-right"> Overage Charge</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentCustomer.breakdown.map((row, index) => (
-                      <tr key={index}>
-                        <td className="bold-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {row.service.includes('Storage') && <Database size={13} className="text-muted" />}
-                          {row.service.includes('Bandwidth') && <Globe size={13} className="text-muted" />}
-                          {row.service.includes('Database') && <Database size={13} className="text-muted" />}
-                          {row.service.includes('API') && <Cpu size={13} className="text-muted" />}
-                          {row.service.includes('Functions') && <Cpu size={13} className="text-muted" />}
-                          {row.service.includes('Networking') && <Globe size={13} className="text-muted" />}
-                          {row.service.includes('Transactions') && <Activity size={13} className="text-muted" />}
-                          {row.service}
-                        </td>
-                        <td>{row.included}</td>
-                        <td className="bold-value">{row.current}</td>
-                        <td>{row.remaining}</td>
-                        <td className={parseInt(row.overage) > 0 ? "text-critical font-medium" : ""}>{row.overage}</td>
-                        <td className="text-right bold-value">
-                          {row.cost > 0 ? (
-                            <span className="text-pink">${row.cost}</span>
-                          ) : (
-                            <span className="text-muted">$0</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Layout: Forecast & Analytics charts */}
-            <div className="dashboard-grid-1-1">
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><TrendingUp size={16} className="text-blue" /> Billing & Consumption Historical Trends</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <div>
-                    <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Monthly Cost Trend (12 Months)</h4>
-                    <div className="chart-container">
-                      <SvgLineChart 
-                        data={currentCustomer.costTrend}
-                        labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                        strokeColor="#e91e63"
-                      />
+                      <div className="meta-item" style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
+                        <span className="meta-label">Next Invoice Date</span>
+                        <span className="meta-value">{currentCustomer.nextInvoiceDate}</span>
+                      </div>
+                      <div className="meta-item" style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
+                        <span className="meta-label">Active Quota Status</span>
+                        <span className="meta-value" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span className="status-badge healthy" style={{ padding: '2px 6px', fontSize: '10px' }}>ACTIVE</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Storage Volume Growth (GB)</h4>
-                    <div className="chart-container">
-                      <SvgLineChart 
-                        data={currentCustomer.storageTrend}
-                        labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                        strokeColor="#2563eb"
-                      />
+
+                  {/* KPI Cards Grid */}
+                  <div className="kpi-grid">
+                    <div className="card kpi-card">
+                      <div className="kpi-header">
+                        <span>Monthly Plan Fee</span>
+                        <CreditCard size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${currentCustomer.monthlyFee}</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Subscription base cost</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card pink">
+                      <div className="kpi-header">
+                        <span>Current Usage Cost</span>
+                        <DollarSign size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${currentCustomer.monthlyFee + currentCustomer.overages}</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Plan fee + Azure overages</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card coral">
+                      <div className="kpi-header">
+                        <span>Overage Charges</span>
+                        <AlertTriangle size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${currentCustomer.overages}</span>
+                      <div className="kpi-footer">
+                        {currentCustomer.overages > 0 ? (
+                          <span className="kpi-trend-down"><TrendingUp size={12} /> Consumption exceeded</span>
+                        ) : (
+                          <span className="kpi-trend-up"><CheckCircle2 size={12} /> Inside plan limits</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card">
+                      <div className="kpi-header">
+                        <span>Estimated Final Bill</span>
+                        <CreditCard size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">{currentCustomer.forecast.invoice}</span>
+                      <div className="kpi-footer font-medium">
+                        <span className="text-muted">Projected end-of-month</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card yellow">
+                      <div className="kpi-header">
+                        <span>Remaining Quota</span>
+                        <Database size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">
+                        {Math.round(100 - (currentCustomer.usageDetails.storage.current / currentCustomer.usageDetails.storage.limit * 100))}%
+                      </span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Storage remaining capacity</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card green">
+                      <div className="kpi-header">
+                        <span>Usage Health Score</span>
+                        <Activity size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value text-green">{currentCustomer.quotaScore}%</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Overall quota health</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><Cpu size={16} className="text-blue" /> Module Usage & Azure Breakdown</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <div>
-                    <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Cost By Platform Module</h4>
-                    <SvgDonutChart 
-                      data={[
-                        { name: 'DAM (Asset Storage)', value: currentCustomer.moduleCostSplit.dam },
-                        { name: 'Ticket Builder', value: currentCustomer.moduleCostSplit.ticketBuilder },
-                        { name: 'Downloads API', value: currentCustomer.moduleCostSplit.downloads },
-                        { name: 'API Requests & Hooks', value: currentCustomer.moduleCostSplit.api }
-                      ]}
-                      colors={['#e91e63', '#2563eb', '#10b981', '#f59e0b']}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Azure Infrastructure cost split</h4>
-                    <SvgDonutChart 
-                      data={[
-                        { name: 'Blob Storage', value: currentCustomer.azureCostSplit.storage },
-                        { name: 'CDN Bandwidth', value: currentCustomer.azureCostSplit.cdn },
-                        { name: 'SQL Databases', value: currentCustomer.azureCostSplit.database },
-                        { name: 'Functions / Network', value: currentCustomer.azureCostSplit.functions + currentCustomer.azureCostSplit.networking }
-                      ]}
-                      colors={['#e91e63', '#3b82f6', '#10b981', '#8b5cf6']}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+                  {/* Layout: Progress list (Left) & Alerts list (Right) */}
+                  <div className="dashboard-grid-2-1">
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Sliders size={16} className="text-blue" /> Plan Resource Allocation & Usage</span>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>Warning thresholds apply at 80% and 90%</span>
+                      </div>
 
-            {/* Layout: Forecast panel */}
-            <div style={{ marginBottom: '24px' }}>
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><Info size={16} className="text-blue" /> Predictive Forecast Analysis</span>
-                </div>
-                <div className="forecast-grid">
-                  <div className="forecast-item">
-                    <span className="forecast-label">Estimated Storage at Month-End</span>
-                    <span className="forecast-value">{currentCustomer.forecast.storage}</span>
-                  </div>
-                  <div className="forecast-item">
-                    <span className="forecast-label">Estimated Final Monthly Invoice</span>
-                    <span className="forecast-value text-pink">{currentCustomer.forecast.invoice}</span>
-                  </div>
-                  <div className="forecast-item">
-                    <span className="forecast-label">Estimated Download Operations</span>
-                    <span className="forecast-value">{currentCustomer.forecast.downloads}</span>
-                  </div>
-                  <div className="forecast-item">
-                    <span className="forecast-label">Projected CDN Egress</span>
-                    <span className="forecast-value">{currentCustomer.forecast.bandwidth}</span>
-                  </div>
-                  <div className="forecast-item">
-                    <span className="forecast-label">Days Until Quota Exhaustion</span>
-                    <span className="forecast-value text-critical">{currentCustomer.forecast.daysUntilExhaustion}</span>
-                  </div>
-                  <div className="forecast-item">
-                    <span className="forecast-label">Upgrade Cost Reduction</span>
-                    <span className="forecast-value text-green">{currentCustomer.forecast.planUpgradeDiscount}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PAGE 2: ADMIN COST MANAGEMENT PORTAL */}
-        {activeTab === 'admin' && (
-          <div>
-            {/* Title & Metadata Row */}
-            <div className="dashboard-header-row">
-              <div>
-                <h1 className="page-title">Admin Profitability & Infrastructure Cost</h1>
-                <p className="page-subtitle">Monitor customer profitability margins and optimize Azure resource deployment costs.</p>
-              </div>
-            </div>
-
-            {/* KPI Cards Grid */}
-            <div className="kpi-grid">
-              <div className="card kpi-card">
-                <div className="kpi-header">
-                  <span>Total Customers</span>
-                  <User size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">{adminKPIs.totalCustomers}</span>
-                <div className="kpi-footer">
-                  <span className="text-green font-medium">+1 new organization</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card pink">
-                <div className="kpi-header">
-                  <span>Monthly Billing Revenue</span>
-                  <DollarSign size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">${adminKPIs.monthlyRevenue.toLocaleString()}</span>
-                <div className="kpi-footer">
-                  <span className="text-muted">Subscription fees + overages</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card coral">
-                <div className="kpi-header">
-                  <span>Azure Infrastructure Cost</span>
-                  <Cpu size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">${adminKPIs.azureCost.toLocaleString()}</span>
-                <div className="kpi-footer">
-                  <span className="kpi-trend-down">Actual cloud bill total</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card green">
-                <div className="kpi-header">
-                  <span>Net Gross Profit</span>
-                  <DollarSign size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value text-green">${adminKPIs.grossProfit.toLocaleString()}</span>
-                <div className="kpi-footer">
-                  <span className="text-green font-medium">
-                    Margin: {adminKPIs.profitMargin.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-
-              <div className="card kpi-card">
-                <div className="kpi-header">
-                  <span>Overage Billing Revenue</span>
-                  <CreditCard size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">${adminKPIs.overageRevenue.toLocaleString()}</span>
-                <div className="kpi-footer">
-                  <span className="text-muted">From quota expansions</span>
-                </div>
-              </div>
-
-              <div className="card kpi-card">
-                <div className="kpi-header">
-                  <span>Active Tenants</span>
-                  <Activity size={14} className="kpi-icon" />
-                </div>
-                <span className="kpi-value">{adminKPIs.activeOrgs}</span>
-                <div className="kpi-footer">
-                  <span className="text-muted">Active deployment nodes</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Layout: Main Customer profitability Table */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-              <div className="section-title-bar">
-                <span className="section-title"><User size={16} className="text-blue" /> Customer Profitability Analysis</span>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Click on any customer row to open details drawer and adjust quotas</span>
-              </div>
-              <div className="table-responsive">
-                <table className="ticket-table">
-                  <thead>
-                    <tr>
-                      <th>Customer Organization Name</th>
-                      <th>Plan Type</th>
-                      <th>Monthly Fee</th>
-                      <th>Azure Cost</th>
-                      <th>Profit margin</th>
-                      <th>Usage Avg</th>
-                      <th>Overage charges</th>
-                      <th>Profitability Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedCustomers.map((c) => {
-                      const totalRev = c.monthlyFee + c.overages;
-                      const profit = totalRev - c.azureCost;
-                      const margin = totalRev > 0 ? (profit / totalRev) * 100 : 0;
-                      
-                      return (
-                        <tr key={c.id} onClick={() => setDrawerCustomerId(c.id)}>
-                          <td className="bold-value">{c.name}</td>
-                          <td>{c.planName}</td>
-                          <td className="bold-value">${c.monthlyFee}</td>
-                          <td>${c.azureCost}</td>
-                          <td className={`bold-value ${margin < 0 ? 'text-critical' : 'text-healthy'}`}>
-                            {margin.toFixed(1)}%
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span>{c.usagePercent}%</span>
-                              <div className="progress-bar-bg" style={{ width: '60px', height: '6px' }}>
+                      <div className="progress-list">
+                        {Object.entries(currentCustomer.usageDetails).map(([key, detail]) => {
+                          const percentage = Math.round((detail.current / detail.limit) * 100);
+                          const colorClass = getProgressColorClass(percentage);
+                          
+                          return (
+                            <div className="progress-item" key={key}>
+                              <div className="progress-label-row">
+                                <span className="progress-name" style={{ textTransform: 'capitalize' }}>
+                                  {key.replace(/([A-Z])/g, ' $1')}
+                                </span>
+                                <span className="progress-stats">
+                                  {detail.current.toLocaleString()} / {detail.limit.toLocaleString()} {detail.unit}
+                                  <span style={{ marginLeft: '10px' }} className={`progress-percentage text-${colorClass}`}>
+                                    {percentage}% Used
+                                  </span>
+                                </span>
+                              </div>
+                              <div className="progress-bar-bg">
                                 <div 
-                                  className={`progress-bar-fill ${getProgressColorClass(c.usagePercent)}`}
-                                  style={{ width: `${c.usagePercent}%` }}
+                                  className={`progress-bar-fill ${colorClass}`}
+                                  style={{ width: `${Math.min(100, percentage)}%` }}
                                 />
                               </div>
                             </div>
-                          </td>
-                          <td className="bold-value text-pink">${c.overages}</td>
-                          <td>{getStatusBadge(c.status)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Table pagination */}
-              <div className="pagination-container">
-                <div className="pagination-select-wrapper">
-                  <span>Rows Per Page:</span>
-                  <select 
-                    className="pagination-select" 
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(parseInt(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <option value={5}>5 Rows</option>
-                    <option value={10}>10 Rows</option>
-                    <option value={20}>20 Rows</option>
-                  </select>
-                </div>
-                <span>
-                  {filteredCustomers.length === 0 ? '0' : (currentPage - 1) * pageSize + 1}-
-                  {Math.min(filteredCustomers.length, currentPage * pageSize)} of {filteredCustomers.length}
-                </span>
-                <div className="pagination-nav">
-                  <button 
-                    className="pagination-btn"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(prev => prev - 1)}
-                  >
-                    &lt;
-                  </button>
-                  <button 
-                    className="pagination-btn"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                  >
-                    &gt;
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Layout: Usage & Azure Infrastructure Breakdown */}
-            <div className="dashboard-grid-2-1">
-              {/* Azure Infra Cost split */}
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><Cpu size={16} className="text-blue" /> Infrastructure Resource Billing Split</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
-                  <div>
-                    <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Total Infrastructure Cloud Cost</h4>
-                    <SvgDonutChart 
-                      data={adminAzureSplit}
-                      colors={['#e91e63', '#2563eb', '#10b981', '#f59e0b', '#8b5cf6']}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Cumulative Cost Over Time</h4>
-                    <div className="chart-container" style={{ height: '220px' }}>
-                      <SvgLineChart 
-                        data={[4500, 4800, 4900, 5200, 5600, 6000, 6200, 6500, 6800, 7100, 7400, adminKPIs.azureCost]}
-                        labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                        strokeColor="#e91e63"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Admin Risk monitoring */}
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><AlertTriangle size={16} className="text-pink" /> Admin Risk & Abuse Detection</span>
-                </div>
-                <div className="alerts-list">
-                  <div className="alert-card critical">
-                    <AlertTriangle size={16} className="alert-icon" />
-                    <div>
-                      <strong>Loss Making Organization:</strong> Acme Marketing Corp ($1,750 cost vs $1,452 revenue).
-                    </div>
-                  </div>
-                  <div className="alert-card critical">
-                    <AlertTriangle size={16} className="alert-icon" />
-                    <div>
-                      <strong>Bandwidth abuse alert:</strong> Starlight Entertainment triggered 3.4 TB overage bandwidth request.
-                    </div>
-                  </div>
-                  <div className="alert-card warning">
-                    <AlertTriangle size={16} className="alert-icon" />
-                    <div>
-                      <strong>Rapid Growth Warning:</strong> Summit Health Group has exceeded 96% storage limit.
-                    </div>
-                  </div>
-                  <div className="alert-card warning">
-                    <AlertTriangle size={16} className="alert-icon" />
-                    <div>
-                      <strong>High Risk of Quota Exhaustion:</strong> Nova Creative Agency has 4 days remaining.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Layout: Top consumers widgets (3 Columns) */}
-            <div className="dashboard-grid-3">
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><Database size={15} className="text-blue" /> Top Storage Consumers</span>
-                </div>
-                <div className="top-consumers-list">
-                  {topConsumers.storage.map((c, i) => (
-                    <div className="top-consumer-item" key={c.id}>
-                      <div className="top-consumer-meta">
-                        <span className="consumer-name">{i+1}. {c.name}</span>
-                        <span className="consumer-value">{c.usageDetails.storage.current} GB</span>
+                          );
+                        })}
                       </div>
-                      <div className="consumer-bar-container">
-                        <div 
-                          className="consumer-bar-fill pink" 
-                          style={{ width: `${(c.usageDetails.storage.current / 3000) * 100}%` }}
+                    </div>
+
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div className="section-title-bar">
+                          <span className="section-title"><AlertTriangle size={16} className="text-pink" /> Billing & Usage Alerts</span>
+                        </div>
+                        <div className="alerts-list">
+                          {currentCustomer.alerts.map((alert) => (
+                            <div className={`alert-card ${alert.type}`} key={alert.id}>
+                              <AlertTriangle size={16} className="alert-icon" />
+                              <span className="alert-message">{alert.msg}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="upgrade-card" style={{ marginTop: '20px' }}>
+                        <span className="upgrade-title">
+                          <Sparkles size={16} className="text-pink" /> Optimization Suggestion
+                        </span>
+                        <p className="upgrade-desc">
+                          Based on your current consumption patterns, upgrading to <span className="upgrade-highlight">Business Plus Plan</span> would reduce your projected overage charges by <strong style={{ color: '#ffffff' }}>32%</strong>.
+                        </p>
+                        <div className="upgrade-actions">
+                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>*Saves approx $80/month</span>
+                          <button className="btn btn-pink upgrade-cta" onClick={() => setUpgradeModalOpen(true)}>Upgrade Options</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Layout: Historical Trends & Module Split Charts */}
+                  <div className="dashboard-grid-1-1" style={{ marginTop: '24px' }}>
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><TrendingUp size={16} className="text-blue" /> Billing & Consumption Historical Trends</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div>
+                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Monthly Cost Trend (12 Months)</h4>
+                          <div className="chart-container">
+                            <SvgLineChart 
+                              data={currentCustomer.costTrend}
+                              labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                              strokeColor="#e91e63"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Storage Volume Growth (GB)</h4>
+                          <div className="chart-container">
+                            <SvgLineChart 
+                              data={currentCustomer.storageTrend}
+                              labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                              strokeColor="#2563eb"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Cpu size={16} className="text-blue" /> Module Usage & Azure Breakdown</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div>
+                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Cost By Platform Module</h4>
+                          <SvgDonutChart 
+                            data={[
+                              { name: 'DAM (Asset Storage)', value: currentCustomer.moduleCostSplit.dam },
+                              { name: 'Ticket Builder', value: currentCustomer.moduleCostSplit.ticketBuilder },
+                              { name: 'Downloads API', value: currentCustomer.moduleCostSplit.downloads },
+                              { name: 'API Requests & Hooks', value: currentCustomer.moduleCostSplit.api }
+                            ]}
+                            colors={['#e91e63', '#2563eb', '#10b981', '#f59e0b']}
+                          />
+                        </div>
+                        <div>
+                          <h4 style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Azure Infrastructure split</h4>
+                          <SvgDonutChart 
+                            data={[
+                              { name: 'Blob Storage', value: currentCustomer.azureCostSplit.storage },
+                              { name: 'CDN Bandwidth', value: currentCustomer.azureCostSplit.cdn },
+                              { name: 'SQL Databases', value: currentCustomer.azureCostSplit.database },
+                              { name: 'Functions / Network', value: currentCustomer.azureCostSplit.functions + currentCustomer.azureCostSplit.networking }
+                            ]}
+                            colors={['#e91e63', '#3b82f6', '#10b981', '#8b5cf6']}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Section 2: Predictive Forecast Analysis */}
+              {clientActiveSection === 'forecast' && (
+                <div>
+                  <div className="dashboard-header-row">
+                    <div>
+                      <h1 className="page-title">Predictive Forecast Analysis</h1>
+                      <p className="page-subtitle">Advanced machine learning-driven cloud cost and storage projections.</p>
+                    </div>
+                    <div className="meta-details">
+                      <div className="meta-item">
+                        <span className="meta-label">Forecast Engine</span>
+                        <span className="meta-value text-pink" style={{ fontWeight: 700 }}>PROPHET V4.2</span>
+                      </div>
+                      <div className="meta-item" style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
+                        <span className="meta-label">Confidence Interval</span>
+                        <span className="meta-value">95% (CI)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="card" style={{ marginBottom: '24px' }}>
+                    <div className="section-title-bar">
+                      <span className="section-title"><Info size={16} className="text-blue" /> Machine Learning Resource Projections</span>
+                    </div>
+                    <div className="forecast-grid">
+                      <div className="forecast-item">
+                        <span className="forecast-label">Estimated Storage at Month-End</span>
+                        <span className="forecast-value">{currentCustomer.forecast.storage}</span>
+                      </div>
+                      <div className="forecast-item">
+                        <span className="forecast-label">Estimated Final Monthly Invoice</span>
+                        <span className="forecast-value text-pink">{currentCustomer.forecast.invoice}</span>
+                      </div>
+                      <div className="forecast-item">
+                        <span className="forecast-label">Estimated Download Operations</span>
+                        <span className="forecast-value">{currentCustomer.forecast.downloads}</span>
+                      </div>
+                      <div className="forecast-item">
+                        <span className="forecast-label">Projected CDN Egress</span>
+                        <span className="forecast-value">{currentCustomer.forecast.bandwidth}</span>
+                      </div>
+                      <div className="forecast-item">
+                        <span className="forecast-label">Days Until Quota Exhaustion</span>
+                        <span className="forecast-value text-critical">{currentCustomer.forecast.daysUntilExhaustion}</span>
+                      </div>
+                      <div className="forecast-item">
+                        <span className="forecast-label">Upgrade Cost Reduction</span>
+                        <span className="forecast-value text-green">{currentCustomer.forecast.planUpgradeDiscount}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Highlights Visualizations Grid */}
+                  <div className="dashboard-grid-1-1">
+                    <div className="card highlight-card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><TrendingUp size={15} className="text-pink" /> 30-Day Storage Projection vs Quota Limit</span>
+                        <span className="badge badge-pink">Predictive Model</span>
+                      </div>
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgPredictiveChart 
+                          historical={currentCustomer.storageTrend}
+                          projected={[
+                            currentCustomer.usageDetails.storage.current,
+                            currentCustomer.usageDetails.storage.current + 25,
+                            currentCustomer.usageDetails.storage.current + 55,
+                            currentCustomer.usageDetails.storage.current + 85,
+                            currentCustomer.usageDetails.storage.current + 115,
+                            currentCustomer.usageDetails.storage.current + 145,
+                            currentCustomer.usageDetails.storage.current + 180
+                          ]}
+                          limit={currentCustomer.usageDetails.storage.limit}
+                          limitLabel="Storage limit"
+                          strokeColor="#e91e63"
+                          unit="GB"
                         />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><Download size={15} className="text-blue" /> Top Download Consumers</span>
-                </div>
-                <div className="top-consumers-list">
-                  {topConsumers.downloads.map((c, i) => (
-                    <div className="top-consumer-item" key={c.id}>
-                      <div className="top-consumer-meta">
-                        <span className="consumer-name">{i+1}. {c.name}</span>
-                        <span className="consumer-value">{(c.usageDetails.downloads.current/1000).toFixed(0)}k Operations</span>
+                    <div className="card highlight-card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><CreditCard size={15} className="text-green" /> Upgrade Cost Savings Simulation (6-Month Projection)</span>
+                        <span className="badge badge-green">Upgrade Simulation</span>
                       </div>
-                      <div className="consumer-bar-container">
-                        <div 
-                          className="consumer-bar-fill blue" 
-                          style={{ width: `${(c.usageDetails.downloads.current / 1500000) * 100}%` }}
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgSavingsChart 
+                          currentPlanCost={currentCustomer.monthlyFee + currentCustomer.overages}
+                          upgradePlanCost={currentCustomer.monthlyFee + currentCustomer.overages > 1200 ? 1500 : 800}
+                          months={6}
                         />
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="card">
-                <div className="section-title-bar">
-                  <span className="section-title"><Globe size={15} className="text-blue" /> Top Bandwidth Egress</span>
-                </div>
-                <div className="top-consumers-list">
-                  {topConsumers.bandwidth.map((c, i) => (
-                    <div className="top-consumer-item" key={c.id}>
-                      <div className="top-consumer-meta">
-                        <span className="consumer-name">{i+1}. {c.name}</span>
-                        <span className="consumer-value">{c.usageDetails.bandwidth.current} TB</span>
+              {/* Section 3: Granular Azure Infrastructure Consumption */}
+              {clientActiveSection === 'infrastructure' && (
+                <div>
+                  <div className="dashboard-header-row">
+                    <div>
+                      <h1 className="page-title">Granular Azure Infrastructure Consumption</h1>
+                      <p className="page-subtitle">Actual resource metrics powered by Microsoft Azure Cost API.</p>
+                    </div>
+                  </div>
+
+                  <div className="card" style={{ marginBottom: '24px' }}>
+                    <div className="section-title-bar">
+                      <span className="section-title"><Layers size={16} className="text-blue" /> Service-by-Service Billing Details</span>
+                    </div>
+                    <div className="table-responsive">
+                      <table className="ticket-table">
+                        <thead>
+                          <tr>
+                            <th>Service Resource</th>
+                            <th>Included Monthly Allowance</th>
+                            <th>Current Billing Consumption</th>
+                            <th>Remaining Units</th>
+                            <th>Overage Quantity</th>
+                            <th className="text-right"> Overage Charge</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {currentCustomer.breakdown.map((row, index) => (
+                            <tr key={index}>
+                              <td className="bold-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {row.service.includes('Storage') && <Database size={13} className="text-muted" />}
+                                {row.service.includes('Bandwidth') && <Globe size={13} className="text-muted" />}
+                                {row.service.includes('Database') && <Database size={13} className="text-muted" />}
+                                {row.service.includes('API') && <Cpu size={13} className="text-muted" />}
+                                {row.service.includes('Functions') && <Cpu size={13} className="text-muted" />}
+                                {row.service.includes('Networking') && <Globe size={13} className="text-muted" />}
+                                {row.service.includes('Transactions') && <Activity size={13} className="text-muted" />}
+                                {row.service}
+                              </td>
+                              <td>{row.included}</td>
+                              <td className="bold-value">{row.current}</td>
+                              <td>{row.remaining}</td>
+                              <td className={parseInt(row.overage) > 0 ? "text-critical font-medium" : ""}>{row.overage}</td>
+                              <td className="text-right bold-value">
+                                {row.cost > 0 ? (
+                                  <span className="text-pink">${row.cost}</span>
+                                ) : (
+                                  <span className="text-muted">$0</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="dashboard-grid-1-1">
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Sliders size={15} className="text-green" /> Included Allowance vs. Actual Consumption</span>
+                        <span className="badge badge-green">Utilization Rate</span>
                       </div>
-                      <div className="consumer-bar-container">
-                        <div 
-                          className="consumer-bar-fill green" 
-                          style={{ width: `${(c.usageDetails.bandwidth.current / 15) * 100}%` }}
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgComparisonBarChart 
+                          data={Object.entries(currentCustomer.usageDetails).map(([key, val]) => ({
+                            name: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+                            limit: val.limit,
+                            current: val.current,
+                            unit: val.unit
+                          }))}
                         />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            {/* Layout: Bottom forecasting */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-              <div className="section-title-bar">
-                <span className="section-title"><Info size={16} className="text-blue" /> Global Financial Projections</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px' }}>
-                <div className="forecast-item" style={{ borderBottom: 'none' }}>
-                  <span className="forecast-label">Projected Gross Revenue</span>
-                  <span className="forecast-value" style={{ fontSize: '20px' }}>${(adminKPIs.monthlyRevenue * 1.05).toFixed(0)}</span>
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Activity size={15} className="text-blue" /> Infrastructure Traffic Patterns (12 Months)</span>
+                        <span className="badge badge-blue">Dual Axis</span>
+                      </div>
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgDualLineChart 
+                          line1={currentCustomer.storageTrend}
+                          line2={currentCustomer.costTrend}
+                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                          line1Label="Storage (GB)"
+                          line2Label="Cost ($)"
+                          line1Color="#2563eb"
+                          line2Color="#e91e63"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="forecast-item" style={{ borderBottom: 'none' }}>
-                  <span className="forecast-label">Projected Azure Cost</span>
-                  <span className="forecast-value text-pink" style={{ fontSize: '20px' }}>${(adminKPIs.azureCost * 1.02).toFixed(0)}</span>
-                </div>
-                <div className="forecast-item" style={{ borderBottom: 'none' }}>
-                  <span className="forecast-label">Expected Net Margin</span>
-                  <span className="forecast-value text-green" style={{ fontSize: '20px' }}>
-                    {((adminKPIs.monthlyRevenue * 1.05 - adminKPIs.azureCost * 1.02) / (adminKPIs.monthlyRevenue * 1.05) * 100).toFixed(1)}%
-                  </span>
-                </div>
-                <div className="forecast-item" style={{ borderBottom: 'none' }}>
-                  <span className="forecast-label">Unbilled Overage Potential</span>
-                  <span className="forecast-value" style={{ fontSize: '20px' }}>$980</span>
-                </div>
-                <div className="forecast-item" style={{ borderBottom: 'none' }}>
-                  <span className="forecast-label">Orgs Near Quota Limit</span>
-                  <span className="forecast-value text-critical" style={{ fontSize: '20px' }}>3 Accounts</span>
-                </div>
-              </div>
+              )}
             </div>
-          </div>
-        )}
-      </main>
+          )}
+
+          {/* PAGE 2: ADMIN PORTAL */}
+          {activeTab === 'admin' && (
+            <div>
+              {/* Section 1: Profitability Overview */}
+              {adminActiveSection === 'profitability' && (
+                <div>
+                  <div className="dashboard-header-row">
+                    <div>
+                      <h1 className="page-title">Admin Profitability Overview</h1>
+                      <p className="page-subtitle">Monitor customer profitability margins and optimize Azure resource deployment costs.</p>
+                    </div>
+                  </div>
+
+                  {/* KPI Cards Grid */}
+                  <div className="kpi-grid">
+                    <div className="card kpi-card">
+                      <div className="kpi-header">
+                        <span>Total Customers</span>
+                        <User size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">{adminKPIs.totalCustomers}</span>
+                      <div className="kpi-footer">
+                        <span className="text-green font-medium">+1 new organization</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card pink">
+                      <div className="kpi-header">
+                        <span>Monthly Billing Revenue</span>
+                        <DollarSign size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${adminKPIs.monthlyRevenue.toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Subscription fees + overages</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card coral">
+                      <div className="kpi-header">
+                        <span>Azure Infrastructure Cost</span>
+                        <Cpu size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${adminKPIs.azureCost.toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="kpi-trend-down">Actual cloud bill total</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card green">
+                      <div className="kpi-header">
+                        <span>Net Gross Profit</span>
+                        <DollarSign size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value text-green">${adminKPIs.grossProfit.toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="text-green font-medium">
+                          Margin: {adminKPIs.profitMargin.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card">
+                      <div className="kpi-header">
+                        <span>Overage Billing Revenue</span>
+                        <CreditCard size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${adminKPIs.overageRevenue.toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">From quota expansions</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card">
+                      <div className="kpi-header">
+                        <span>Active Tenants</span>
+                        <Activity size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">{adminKPIs.activeOrgs}</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Active deployment nodes</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer Profitability Analysis Table */}
+                  <div className="card" style={{ marginBottom: '24px' }}>
+                    <div className="section-title-bar">
+                      <span className="section-title"><User size={16} className="text-blue" /> Customer Profitability Analysis</span>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>Click on any customer row to open details drawer and adjust quotas</span>
+                    </div>
+                    <div className="table-responsive">
+                      <table className="ticket-table">
+                        <thead>
+                          <tr>
+                            <th>Customer Organization Name</th>
+                            <th>Plan Type</th>
+                            <th>Monthly Fee</th>
+                            <th>Azure Cost</th>
+                            <th>Profit margin</th>
+                            <th>Usage Avg</th>
+                            <th>Overage charges</th>
+                            <th>Profitability Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginatedCustomers.map((c) => {
+                            const totalRev = c.monthlyFee + c.overages;
+                            const profit = totalRev - c.azureCost;
+                            const margin = totalRev > 0 ? (profit / totalRev) * 100 : 0;
+                            
+                            return (
+                              <tr key={c.id} onClick={() => setDrawerCustomerId(c.id)} style={{ cursor: 'pointer' }}>
+                                <td className="bold-value">{c.name}</td>
+                                <td>{c.planName}</td>
+                                <td className="bold-value">${c.monthlyFee}</td>
+                                <td>${c.azureCost}</td>
+                                <td className={`bold-value ${margin < 0 ? 'text-critical' : 'text-healthy'}`}>
+                                  {margin.toFixed(1)}%
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>{c.usagePercent}%</span>
+                                    <div className="progress-bar-bg" style={{ width: '60px', height: '6px' }}>
+                                      <div 
+                                        className={`progress-bar-fill ${getProgressColorClass(c.usagePercent)}`}
+                                        style={{ width: `${c.usagePercent}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="bold-value text-pink">${c.overages}</td>
+                                <td>{getStatusBadge(c.status)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Table pagination */}
+                    <div className="pagination-container">
+                      <div className="pagination-select-wrapper">
+                        <span>Rows Per Page:</span>
+                        <select 
+                          className="pagination-select" 
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(parseInt(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                        >
+                          <option value={5}>5 Rows</option>
+                          <option value={10}>10 Rows</option>
+                          <option value={20}>20 Rows</option>
+                        </select>
+                      </div>
+                      <span>
+                        {filteredCustomers.length === 0 ? '0' : (currentPage - 1) * pageSize + 1}-
+                        {Math.min(filteredCustomers.length, currentPage * pageSize)} of {filteredCustomers.length}
+                      </span>
+                      <div className="pagination-nav">
+                        <button 
+                          className="pagination-btn"
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage(prev => prev - 1)}
+                        >
+                          &lt;
+                        </button>
+                        <button 
+                          className="pagination-btn"
+                          disabled={currentPage >= totalPages}
+                          onClick={() => setCurrentPage(prev => prev + 1)}
+                        >
+                          &gt;
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Highlights Profitability Charts */}
+                  <div className="dashboard-grid-1-1">
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><TrendingUp size={15} className="text-green" /> Margin Analysis by Organization</span>
+                        <span className="badge badge-green">Profitability Leaderboard</span>
+                      </div>
+                      <div className="chart-container" style={{ height: '260px', marginTop: '10px' }}>
+                        <SvgProfitMarginChart 
+                          data={customers.map(c => {
+                            const totalRev = c.monthlyFee + c.overages;
+                            const profit = totalRev - c.azureCost;
+                            const margin = totalRev > 0 ? (profit / totalRev) * 100 : 0;
+                            return {
+                              name: c.name.split(' ')[0], // short name
+                              margin: margin
+                            };
+                          }).sort((a, b) => b.margin - a.margin)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Cpu size={15} className="text-pink" /> Aggregate Cost Over Time</span>
+                        <span className="badge badge-pink">12M cloud growth</span>
+                      </div>
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgLineChart 
+                          data={[4500, 4800, 4900, 5200, 5600, 6000, 6200, 6500, 6800, 7100, 7400, adminKPIs.azureCost]}
+                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                          strokeColor="#e91e63"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Section 2: Global Resource Consumption */}
+              {adminActiveSection === 'consumption' && (
+                <div>
+                  <div className="dashboard-header-row">
+                    <div>
+                      <h1 className="page-title">Global Resource Consumption</h1>
+                      <p className="page-subtitle">High-level analysis of storage, bandwidth, and CPU execution metrics across all tenants.</p>
+                    </div>
+                  </div>
+
+                  {/* Top Consumers Grid (3 Columns) */}
+                  <div className="dashboard-grid-3" style={{ marginBottom: '24px' }}>
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Database size={15} className="text-blue" /> Top Storage Consumers</span>
+                      </div>
+                      <div className="top-consumers-list">
+                        {topConsumers.storage.map((c, i) => (
+                          <div className="top-consumer-item" key={c.id}>
+                            <div className="top-consumer-meta">
+                              <span className="consumer-name">{i+1}. {c.name}</span>
+                              <span className="consumer-value">{c.usageDetails.storage.current} GB</span>
+                            </div>
+                            <div className="consumer-bar-container">
+                              <div 
+                                className="consumer-bar-fill pink" 
+                                style={{ width: `${(c.usageDetails.storage.current / 3000) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Download size={15} className="text-blue" /> Top Download Consumers</span>
+                      </div>
+                      <div className="top-consumers-list">
+                        {topConsumers.downloads.map((c, i) => (
+                          <div className="top-consumer-item" key={c.id}>
+                            <div className="top-consumer-meta">
+                              <span className="consumer-name">{i+1}. {c.name}</span>
+                              <span className="consumer-value">{(c.usageDetails.downloads.current/1000).toFixed(0)}k Operations</span>
+                            </div>
+                            <div className="consumer-bar-container">
+                              <div 
+                                className="consumer-bar-fill blue" 
+                                style={{ width: `${(c.usageDetails.downloads.current / 1500000) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Globe size={15} className="text-blue" /> Top Bandwidth Egress</span>
+                      </div>
+                      <div className="top-consumers-list">
+                        {topConsumers.bandwidth.map((c, i) => (
+                          <div className="top-consumer-item" key={c.id}>
+                            <div className="top-consumer-meta">
+                              <span className="consumer-name">{i+1}. {c.name}</span>
+                              <span className="consumer-value">{c.usageDetails.bandwidth.current} TB</span>
+                            </div>
+                            <div className="consumer-bar-container">
+                              <div 
+                                className="consumer-bar-fill green" 
+                                style={{ width: `${(c.usageDetails.bandwidth.current / 15) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Visualizations Grid */}
+                  <div className="dashboard-grid-1-1">
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Activity size={15} className="text-blue" /> Global Multi-Tenant Resource Trajectory (12 Months)</span>
+                        <span className="badge badge-blue">Aggregate</span>
+                      </div>
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgDualLineChart 
+                          line1={globalStorageTrend}
+                          line2={globalCostTrend}
+                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                          line1Label="Total Storage (GB)"
+                          line2Label="Total Cost ($)"
+                          line1Color="#3b82f6"
+                          line2Color="#10b981"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Cpu size={15} className="text-pink" /> Total Azure Infrastructure Costs by Organization</span>
+                        <span className="badge badge-pink">Cost Leaderboard</span>
+                      </div>
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgBarChart 
+                          data={customers.map(c => ({
+                            name: c.name.split(' ')[0],
+                            value: c.azureCost
+                          })).sort((a, b) => b.value - a.value)}
+                          colors={['#e91e63', '#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#3b82f6']}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Section 3: Risk & Abuse Monitoring */}
+              {adminActiveSection === 'risk' && (
+                <div>
+                  <div className="dashboard-header-row">
+                    <div>
+                      <h1 className="page-title">Risk & Abuse Monitoring</h1>
+                      <p className="page-subtitle">Real-time alerts, threshold violations, and quota safety margin distributions.</p>
+                    </div>
+                  </div>
+
+                  <div className="dashboard-grid-2-1" style={{ marginBottom: '24px' }}>
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><AlertTriangle size={16} className="text-pink" /> Admin Risk & Abuse Detection</span>
+                      </div>
+                      <div className="alerts-list">
+                        <div className="alert-card critical">
+                          <AlertTriangle size={16} className="alert-icon" />
+                          <div>
+                            <strong>Loss Making Organization:</strong> Acme Marketing Corp ($1,750 cost vs $1,452 revenue).
+                          </div>
+                        </div>
+                        <div className="alert-card critical">
+                          <AlertTriangle size={16} className="alert-icon" />
+                          <div>
+                            <strong>Bandwidth abuse alert:</strong> Starlight Entertainment triggered 3.4 TB overage bandwidth request.
+                          </div>
+                        </div>
+                        <div className="alert-card warning">
+                          <AlertTriangle size={16} className="alert-icon" />
+                          <div>
+                            <strong>Rapid Growth Warning:</strong> Summit Health Group has exceeded 96% storage limit.
+                          </div>
+                        </div>
+                        <div className="alert-card warning">
+                          <AlertTriangle size={16} className="alert-icon" />
+                          <div>
+                            <strong>High Risk of Quota Exhaustion:</strong> Nova Creative Agency has 4 days remaining.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <div className="section-title-bar" style={{ width: '100%' }}>
+                        <span className="section-title"><Activity size={15} className="text-blue" /> Quota Status Distribution</span>
+                      </div>
+                      <div style={{ marginTop: '10px', width: '100%' }}>
+                        <SvgGaugeChart 
+                          healthy={statusCounts.healthy} 
+                          warning={statusCounts.warning} 
+                          critical={statusCounts.critical} 
+                          loss={statusCounts.loss} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="dashboard-grid-1-1">
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><AlertTriangle size={15} className="text-coral" /> Quota Health Score Leaderboard (Lowest Health First)</span>
+                        <span className="badge badge-coral">Risk Metric</span>
+                      </div>
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgBarChart 
+                          data={customers.map(c => ({
+                            name: c.name.split(' ')[0],
+                            value: c.quotaScore
+                          })).sort((a,b) => a.value - b.value)}
+                          colors={['#f43f5e', '#be123c', '#f59e0b', '#10b981', '#10b981', '#10b981']}
+                          suffix="%"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Info size={16} className="text-blue" /> Global Financial Projections & Health Warnings</span>
+                        <span className="badge badge-blue">Forecast</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
+                        <div className="forecast-item" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                          <span className="forecast-label">Projected Gross Revenue (Next Month)</span>
+                          <span className="forecast-value" style={{ fontSize: '18px' }}>${(adminKPIs.monthlyRevenue * 1.05).toFixed(0)}</span>
+                        </div>
+                        <div className="forecast-item" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                          <span className="forecast-label">Projected Azure Cost (Next Month)</span>
+                          <span className="forecast-value text-pink" style={{ fontSize: '18px' }}>${(adminKPIs.azureCost * 1.02).toFixed(0)}</span>
+                        </div>
+                        <div className="forecast-item" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                          <span className="forecast-label">Expected Net Margin (Next Month)</span>
+                          <span className="forecast-value text-green" style={{ fontSize: '18px' }}>
+                            {((adminKPIs.monthlyRevenue * 1.05 - adminKPIs.azureCost * 1.02) / (adminKPIs.monthlyRevenue * 1.05) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="forecast-item" style={{ borderBottom: 'none' }}>
+                          <span className="forecast-label">Organizations Near Limit</span>
+                          <span className="forecast-value text-critical" style={{ fontSize: '18px' }}>3 Accounts</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
 
       {/* DETAIL DRAWER COMPONENT (SLIDES OUT IN ADMIN VIEW) */}
       {drawerCustomer && (
@@ -1529,16 +2467,6 @@ export default function App() {
             </div>
 
             <div className="drawer-body">
-              {/* Act as client CTA */}
-              <div className="drawer-section">
-                <button 
-                  className="btn btn-pink" 
-                  onClick={() => actAsCustomer(drawerCustomer.id)}
-                  style={{ width: '100%', padding: '10px 0', fontSize: '13px' }}
-                >
-                  <User size={14} style={{ marginRight: '6px' }} /> Act As Customer Portal
-                </button>
-              </div>
 
               {/* Profitability Panel */}
               <div className="drawer-section">
@@ -1655,15 +2583,79 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Recommentation */}
-              <div className="upgrade-card" style={{ padding: '16px' }}>
-                <span className="upgrade-title" style={{ fontSize: '14px' }}>
-                  <Sparkles size={14} className="text-pink" /> Recommended Action
-                </span>
-                <p className="upgrade-desc" style={{ fontSize: '12px', marginBottom: '12px' }}>
-                  Upgrading this customer to <strong style={{ color: '#ffffff' }}>Business Plus</strong> plan would mitigate current overages and improve resource utilization efficiency.
-                </p>
-              </div>
+              {/* Recommendation */}
+              {(() => {
+                const rec = getRecommendation(drawerCustomer);
+                return (
+                  <div style={{
+                    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+                    borderRadius: '10px',
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 16px rgba(15, 23, 42, 0.25)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(135deg, #e91e63, #ff6090)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <Sparkles size={14} color="#fff" />
+                      </div>
+                      <span style={{
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#ffffff',
+                        letterSpacing: '0.3px'
+                      }}>
+                        Recommended Action
+                      </span>
+                    </div>
+                    <p style={{
+                      fontSize: '12.5px',
+                      margin: 0,
+                      color: '#cbd5e1',
+                      lineHeight: '1.55'
+                    }}>
+                      {rec.text}
+                    </p>
+                    {rec.nextPlan && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '2px' }}>
+                        <button 
+                          className="btn btn-pink" 
+                          style={{
+                            flex: 1,
+                            padding: '9px 0',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                            letterSpacing: '0.3px'
+                          }}
+                          onClick={() => {
+                            setCustomers(prev => prev.map(c => {
+                              if (c.id === drawerCustomer.id) {
+                                return { ...c, planName: rec.nextPlan, monthlyFee: rec.fee };
+                              }
+                              return c;
+                            }));
+                            setToastMsg(`Successfully upgraded ${drawerCustomer.name} to ${rec.nextPlan}!`);
+                          }}
+                        >
+                          Upgrade to {rec.nextPlan}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
             </div>
 
