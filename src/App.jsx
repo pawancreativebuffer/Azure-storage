@@ -2515,7 +2515,7 @@ export default function App() {
                           line1Color="#8b5cf6"
                           line2Color="#e91e63"
                           height={220}
-                          fontSize={9}
+                          fontSize={8}
                         />
                       ) : (
                         <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b' }}>
