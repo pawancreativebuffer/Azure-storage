@@ -910,7 +910,7 @@ function SvgDualLineChart({ line1, line2, labels, line1Label, line2Label, line1C
   );
 }
 
-function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Color = '#2563eb', line2Color = '#e91e63', height = 220 }) {
+function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Color = '#2563eb', line2Color = '#e91e63', height = 220, fontSize = 11 }) {
   if (!line1 || line1.length === 0) return null;
 
   const max1 = Math.max(...line1) * 1.15 || 100;
@@ -938,8 +938,8 @@ function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Co
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-            <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: line1Color, fontSize: '13px', fontWeight: 600 }}>{val1}</text>
-            <text x={chartWidth - paddingRight + 8} y={y + 5} textAnchor="start" style={{ fill: line2Color, fontSize: '13px', fontWeight: 600 }}>{val2}</text>
+            <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: line1Color, fontSize: `${fontSize}px`, fontWeight: 600 }}>{val1}</text>
+            <text x={chartWidth - paddingRight + 8} y={y + 5} textAnchor="start" style={{ fill: line2Color, fontSize: `${fontSize}px`, fontWeight: 600 }}>{val2}</text>
           </g>
         );
       })}
@@ -983,7 +983,7 @@ function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Co
               x={xCenter}
               y={height - 8}
               textAnchor="middle"
-              style={{ fill: '#64748b', fontSize: '13px', fontWeight: 500 }}
+              style={{ fill: '#64748b', fontSize: `${fontSize}px`, fontWeight: 500 }}
             >
               {labels[index]}
             </text>
@@ -996,10 +996,10 @@ function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Co
       {/* Legend */}
       <g transform={`translate(${paddingLeft}, 10)`}>
         <rect x="0" y="2" width="12" height="10" rx="2" fill={line1Color} />
-        <text x="18" y="11" style={{ fill: '#334155', fontSize: '13px', fontWeight: 700 }}>{line1Label}</text>
+        <text x="18" y="11" style={{ fill: '#334155', fontSize: `${fontSize}px`, fontWeight: 700 }}>{line1Label}</text>
 
         <rect x="180" y="2" width="12" height="10" rx="2" fill={line2Color} />
-        <text x="198" y="11" style={{ fill: '#334155', fontSize: '13px', fontWeight: 700 }}>{line2Label}</text>
+        <text x="198" y="11" style={{ fill: '#334155', fontSize: `${fontSize}px`, fontWeight: 700 }}>{line2Label}</text>
       </g>
     </svg>
   );
@@ -1151,14 +1151,87 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [toastMsg, setToastMsg] = useState(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [invoiceMonthFilter, setInvoiceMonthFilter] = useState('all');
+  const [chartYearFilter, setChartYearFilter] = useState('2026');
+  const [invoicePageSize, setInvoicePageSize] = useState(5);
+  const [invoiceCurrentPage, setInvoiceCurrentPage] = useState(1);
 
   const [adminAzureInvoices, setAdminAzureInvoices] = useState([
-    { id: 'AZ-INV-2026-06', month: 'June 2026', date: 'Jun 01, 2026', azureCost: 9442, clientRevenue: 10320, status: 'Paid', fileName: 'azure_invoice_june_2026.pdf' },
+    // 2026 Invoices
+    { id: 'AZ-INV-2026-06', month: 'June 2026', date: 'Jun 01, 2026', azureCost: 8572, clientRevenue: 10320, status: 'Paid', fileName: 'azure_invoice_june_2026.pdf' },
     { id: 'AZ-INV-2026-05', month: 'May 2026', date: 'May 01, 2026', azureCost: 9210, clientRevenue: 10210, status: 'Paid', fileName: 'azure_invoice_may_2026.pdf' },
     { id: 'AZ-INV-2026-04', month: 'April 2026', date: 'Apr 01, 2026', azureCost: 8990, clientRevenue: 9850, status: 'Paid', fileName: 'azure_invoice_apr_2026.pdf' },
     { id: 'AZ-INV-2026-03', month: 'March 2026', date: 'Mar 01, 2026', azureCost: 9120, clientRevenue: 9940, status: 'Paid', fileName: 'azure_invoice_mar_2026.pdf' },
     { id: 'AZ-INV-2026-02', month: 'February 2026', date: 'Feb 01, 2026', azureCost: 8750, clientRevenue: 9680, status: 'Paid', fileName: 'azure_invoice_feb_2026.pdf' },
+    { id: 'AZ-INV-2026-01', month: 'January 2026', date: 'Jan 01, 2026', azureCost: 8300, clientRevenue: 9400, status: 'Paid', fileName: 'azure_invoice_jan_2026.pdf' },
+
+    // 2025 Invoices
+    { id: 'AZ-INV-2025-12', month: 'December 2025', date: 'Dec 01, 2025', azureCost: 7900, clientRevenue: 9100, status: 'Paid', fileName: 'azure_invoice_dec_2025.pdf' },
+    { id: 'AZ-INV-2025-11', month: 'November 2025', date: 'Nov 01, 2025', azureCost: 7800, clientRevenue: 9000, status: 'Paid', fileName: 'azure_invoice_nov_2025.pdf' },
+    { id: 'AZ-INV-2025-10', month: 'October 2025', date: 'Oct 01, 2025', azureCost: 7700, clientRevenue: 8900, status: 'Paid', fileName: 'azure_invoice_oct_2025.pdf' },
+    { id: 'AZ-INV-2025-09', month: 'September 2025', date: 'Sep 01, 2025', azureCost: 7600, clientRevenue: 8800, status: 'Paid', fileName: 'azure_invoice_sep_2025.pdf' },
+    { id: 'AZ-INV-2025-08', month: 'August 2025', date: 'Aug 01, 2025', azureCost: 8100, clientRevenue: 9300, status: 'Paid', fileName: 'azure_invoice_aug_2025.pdf' },
+    { id: 'AZ-INV-2025-07', month: 'July 2025', date: 'Jul 01, 2025', azureCost: 8000, clientRevenue: 9200, status: 'Paid', fileName: 'azure_invoice_jul_2025.pdf' },
+    { id: 'AZ-INV-2025-06', month: 'June 2025', date: 'Jun 01, 2025', azureCost: 7850, clientRevenue: 9100, status: 'Paid', fileName: 'azure_invoice_june_2025.pdf' },
+    { id: 'AZ-INV-2025-05', month: 'May 2025', date: 'May 01, 2025', azureCost: 7700, clientRevenue: 8950, status: 'Paid', fileName: 'azure_invoice_may_2025.pdf' },
+    { id: 'AZ-INV-2025-04', month: 'April 2025', date: 'Apr 01, 2025', azureCost: 7600, clientRevenue: 8800, status: 'Paid', fileName: 'azure_invoice_apr_2025.pdf' },
+    { id: 'AZ-INV-2025-03', month: 'March 2025', date: 'Mar 01, 2025', azureCost: 7500, clientRevenue: 8700, status: 'Paid', fileName: 'azure_invoice_mar_2025.pdf' },
+    { id: 'AZ-INV-2025-02', month: 'February 2025', date: 'Feb 01, 2025', azureCost: 7400, clientRevenue: 8600, status: 'Paid', fileName: 'azure_invoice_feb_2025.pdf' },
+    { id: 'AZ-INV-2025-01', month: 'January 2025', date: 'Jan 01, 2025', azureCost: 7300, clientRevenue: 8500, status: 'Paid', fileName: 'azure_invoice_jan_2025.pdf' },
   ]);
+
+  const availableYears = useMemo(() => {
+    const years = new Set();
+    adminAzureInvoices.forEach(inv => {
+      const match = inv.month.match(/\b(20\d{2})\b/);
+      if (match) {
+        years.add(match[1]);
+      }
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [adminAzureInvoices]);
+
+  const chartData = useMemo(() => {
+    const monthOrder = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const yearInvoices = adminAzureInvoices.filter(inv => {
+      const match = inv.month.match(/\b(20\d{2})\b/);
+      return match && match[1] === chartYearFilter;
+    });
+
+    const sortedInvoices = [...yearInvoices].sort((a, b) => {
+      const aMonth = monthOrder.findIndex(m => a.month.includes(m));
+      const bMonth = monthOrder.findIndex(m => b.month.includes(m));
+      return aMonth - bMonth;
+    });
+
+    const labels = sortedInvoices.map(inv => {
+      const match = inv.month.match(/^([A-Za-z]+)/);
+      return match ? match[1].substring(0, 3) : inv.month;
+    });
+    const line1 = sortedInvoices.map(inv => inv.azureCost);
+    const line2 = sortedInvoices.map(inv => inv.clientRevenue);
+
+    return { labels, line1, line2 };
+  }, [adminAzureInvoices, chartYearFilter]);
+
+  const filteredInvoices = useMemo(() => {
+    return invoiceMonthFilter === 'all'
+      ? adminAzureInvoices
+      : adminAzureInvoices.filter(inv => inv.month === invoiceMonthFilter);
+  }, [adminAzureInvoices, invoiceMonthFilter]);
+
+  const paginatedInvoices = useMemo(() => {
+    const start = (invoiceCurrentPage - 1) * invoicePageSize;
+    return filteredInvoices.slice(start, start + invoicePageSize);
+  }, [filteredInvoices, invoiceCurrentPage, invoicePageSize]);
+
+  const totalInvoicePages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredInvoices.length / invoicePageSize));
+  }, [filteredInvoices, invoicePageSize]);
 
   const handleDownloadAzureInvoice = (invoice) => {
     const element = document.createElement("a");
@@ -1200,6 +1273,7 @@ export default function App() {
     };
 
     setAdminAzureInvoices(prev => [newInv, ...prev]);
+    setInvoiceCurrentPage(1);
     setToastMsg(`Uploaded Azure Invoice: ${file.name}`);
   };
 
@@ -2227,154 +2301,227 @@ export default function App() {
               {/* Section 2: Azure Infrastructure Invoices */}
               {adminActiveSection === 'invoices' && (
                 <div>
-                  <div className="dashboard-header-row">
+                  <div className="dashboard-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h1 className="page-title">Azure Infrastructure Invoices</h1>
                       <p className="page-subtitle">Track and audit Microsoft Azure direct subscription costs against client collected revenue.</p>
                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Filter:</span>
+                      <input
+                        type="month"
+                        className="toolbar-select"
+                        style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', fontWeight: 500, color: '#1e293b', cursor: 'pointer', minWidth: '170px' }}
+                        value={invoiceMonthFilter === 'all' ? '' : invoiceMonthFilter}
+                        onChange={(e) => {
+                          if (!e.target.value) {
+                            setInvoiceMonthFilter('all');
+                          } else {
+                            // Convert 2026-06 to "June 2026"
+                            const [y, m] = e.target.value.split('-');
+                            const monthName = new Date(y, parseInt(m) - 1).toLocaleString('en-US', { month: 'long' });
+                            setInvoiceMonthFilter(`${monthName} ${y}`);
+                          }
+                        }}
+                      />
+                      {invoiceMonthFilter !== 'all' && (
+                        <button
+                          className="btn btn-outline"
+                          style={{ padding: '5px 10px', fontSize: '11px' }}
+                          onClick={() => setInvoiceMonthFilter('all')}
+                        >
+                          Clear
+                        </button>
+                      )}
+                      <div style={{ borderLeft: '1px solid #e2e8f0', height: '20px', margin: '0 4px' }}></div>
+                      <label className="btn btn-navy" style={{ cursor: 'pointer', display: 'inline-flex', margin: 0 }}>
+                        <Plus size={14} /> Upload Azure Invoice
+                        <input
+                          type="file"
+                          accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.txt"
+                          style={{ display: 'none' }}
+                          onChange={handleUploadAzureInvoice}
+                        />
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="kpi-grid" style={{ marginBottom: '24px' }}>
+                  {/* KPI Cards (small, 4-col grid like profitability) */}
+                  <div className="kpi-grid">
                     <div className="card kpi-card">
                       <div className="kpi-header">
-                        <span>Total Azure Spend (YTD)</span>
+                        <span>This Month Azure Billing</span>
                         <Database size={14} className="kpi-icon" />
                       </div>
-                      <span className="kpi-value">${(adminAzureInvoices.reduce((sum, inv) => sum + inv.azureCost, 0)).toLocaleString()}</span>
+                      <span className="kpi-value">${(adminAzureInvoices.length > 0 ? adminAzureInvoices[0].azureCost : 0).toLocaleString()}</span>
                       <div className="kpi-footer">
-                        <span className="text-muted">Total direct Microsoft billing</span>
-                      </div>
-                    </div>
-
-                    <div className="card kpi-card pink">
-                      <div className="kpi-header">
-                        <span>Collected Client Billings (YTD)</span>
-                        <DollarSign size={14} className="kpi-icon" />
-                      </div>
-                      <span className="kpi-value">${(adminAzureInvoices.reduce((sum, inv) => sum + inv.clientRevenue, 0)).toLocaleString()}</span>
-                      <div className="kpi-footer">
-                        <span className="text-green font-medium">+100% collected margin</span>
+                        <span className="text-pink font-medium">{adminAzureInvoices.length > 0 ? adminAzureInvoices[0].month : 'N/A'}</span>
                       </div>
                     </div>
 
                     <div className="card kpi-card green">
                       <div className="kpi-header">
-                        <span>Aggregate Margin (YTD)</span>
-                        <TrendingUp size={14} className="kpi-icon" />
+                        <span>Monthly Subscriptions</span>
+                        <DollarSign size={14} className="kpi-icon" />
                       </div>
-                      {(() => {
-                        const totalSpend = adminAzureInvoices.reduce((sum, inv) => sum + inv.azureCost, 0);
-                        const totalRev = adminAzureInvoices.reduce((sum, inv) => sum + inv.clientRevenue, 0);
-                        const margin = totalRev > 0 ? ((totalRev - totalSpend) / totalRev * 100).toFixed(1) : 0;
-                        return (
-                          <>
-                            <span className="kpi-value">{margin}%</span>
-                            <div className="kpi-footer">
-                              <span className="text-healthy font-medium">${(totalRev - totalSpend).toLocaleString()} gross profit</span>
-                            </div>
-                          </>
-                        );
-                      })()}
+                      <span className="kpi-value">${(adminAzureInvoices.length > 0 ? adminAzureInvoices[0].clientRevenue : 0).toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="text-green font-medium">
+                          {adminAzureInvoices.length > 0
+                            ? `Net: $${(adminAzureInvoices[0].clientRevenue - adminAzureInvoices[0].azureCost).toLocaleString()}`
+                            : 'N/A'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="dashboard-grid-2-1" style={{ marginBottom: '24px' }}>
-                    {/* Left: Invoice list */}
-                    <div className="card">
-                      <div className="section-title-bar">
-                        <span className="section-title"><Layers size={16} className="text-blue" /> Azure Invoice Audit Log</span>
-                      </div>
-                      <div className="table-responsive">
-                        <table className="ticket-table">
-                          <thead>
+                  <div style={{ marginTop: '24px' }}></div>
+
+                  {/* Full-width Invoice Audit Log Table */}
+                  <div className="card" style={{ marginBottom: '24px' }}>
+                    <div className="section-title-bar">
+                      <span className="section-title"><Layers size={16} className="text-blue" /> Azure Invoice Audit Log</span>
+                      {invoiceMonthFilter !== 'all' && (
+                        <span className="badge badge-blue">{invoiceMonthFilter}</span>
+                      )}
+                    </div>
+                    <div className="table-responsive">
+                      <table className="ticket-table">
+                        <thead>
+                          <tr>
+                            <th>Invoice ID</th>
+                            <th>Billing Period</th>
+                            <th>Date Received</th>
+                            <th>Azure Direct Cost</th>
+                            <th>Client Total Revenue</th>
+                            <th>Audited Margin</th>
+                            <th>Status</th>
+                            <th className="text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginatedInvoices.map((inv) => {
+                            const profit = inv.clientRevenue - inv.azureCost;
+                            const margin = inv.clientRevenue > 0 ? (profit / inv.clientRevenue * 100).toFixed(1) : 0;
+                            return (
+                              <tr key={inv.id} style={{ cursor: 'default' }}>
+                                <td className="bold-value">{inv.id}</td>
+                                <td>{inv.month}</td>
+                                <td>{inv.date}</td>
+                                <td className="bold-value text-pink">${inv.azureCost.toLocaleString()}</td>
+                                <td className="bold-value text-green">${inv.clientRevenue.toLocaleString()}</td>
+                                <td>
+                                  <span className={`status-badge ${parseFloat(margin) > 0 ? 'healthy' : 'loss'}`}>
+                                    {parseFloat(margin) > 0 ? `+${margin}%` : `${margin}%`}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className="status-badge healthy">
+                                    {inv.status}
+                                  </span>
+                                </td>
+                                <td className="text-right">
+                                  <button
+                                    className="btn btn-outline"
+                                    style={{ padding: '4px 8px', fontSize: '11px' }}
+                                    onClick={() => handleDownloadAzureInvoice(inv)}
+                                  >
+                                    <Download size={12} /> Download
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          {filteredInvoices.length === 0 && (
                             <tr>
-                              <th>Invoice ID</th>
-                              <th>Billing Period</th>
-                              <th>Date Received</th>
-                              <th>Azure Direct Cost</th>
-                              <th>Client Total Revenue</th>
-                              <th>Audited Margin</th>
-                              <th>Status</th>
-                              <th className="text-right">Action</th>
+                              <td colSpan={8} style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
+                                No invoices found {invoiceMonthFilter !== 'all' ? `for ${invoiceMonthFilter}` : ''}
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {adminAzureInvoices.map((inv) => {
-                              const profit = inv.clientRevenue - inv.azureCost;
-                              const margin = inv.clientRevenue > 0 ? (profit / inv.clientRevenue * 100).toFixed(1) : 0;
-                              return (
-                                <tr key={inv.id} style={{ cursor: 'default' }}>
-                                  <td className="bold-value">{inv.id}</td>
-                                  <td>{inv.month}</td>
-                                  <td>{inv.date}</td>
-                                  <td className="bold-value text-pink">${inv.azureCost.toLocaleString()}</td>
-                                  <td className="bold-value text-green">${inv.clientRevenue.toLocaleString()}</td>
-                                  <td>
-                                    <span className={`status-badge ${parseFloat(margin) > 0 ? 'healthy' : 'loss'}`}>
-                                      {parseFloat(margin) > 0 ? `+${margin}%` : `${margin}%`}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <span className="status-badge healthy">
-                                      {inv.status}
-                                    </span>
-                                  </td>
-                                  <td className="text-right">
-                                    <button
-                                      className="btn btn-outline"
-                                      style={{ padding: '4px 8px', fontSize: '11px' }}
-                                      onClick={() => handleDownloadAzureInvoice(inv)}
-                                    >
-                                      <Download size={12} /> Download
-                                    </button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                          )}
+                        </tbody>
+                      </table>
                     </div>
 
-                    {/* Right: Upload zone & comparison chart */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                      {/* Upload Card */}
-                      <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', borderStyle: 'dashed', borderWidth: '2px', borderColor: '#cbd5e1', padding: '24px' }}>
-                        <FileSpreadsheet size={40} className="text-blue" style={{ marginBottom: '12px', opacity: 0.8 }} />
-                        <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '6px' }}>Upload Azure Invoice</h3>
-                        <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '16px', maxWidth: '240px' }}>
-                          Upload the official Microsoft Azure billing receipt PDF to audit multi-tenant consumption.
-                        </p>
-
-                        <label className="btn btn-navy" style={{ cursor: 'pointer', display: 'inline-flex' }}>
-                          <Plus size={14} /> Upload Azure Invoice File
-                          <input
-                            type="file"
-                            accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.txt"
-                            style={{ display: 'none' }}
-                            onChange={handleUploadAzureInvoice}
-                          />
-                        </label>
+                    {/* Table pagination */}
+                    <div className="pagination-container">
+                      <div className="pagination-select-wrapper">
+                        <span>Rows Per Page:</span>
+                        <select
+                          className="pagination-select"
+                          value={invoicePageSize}
+                          onChange={(e) => {
+                            setInvoicePageSize(parseInt(e.target.value));
+                            setInvoiceCurrentPage(1);
+                          }}
+                        >
+                          <option value={5}>5 Rows</option>
+                          <option value={10}>10 Rows</option>
+                          <option value={20}>20 Rows</option>
+                        </select>
                       </div>
-
-                      {/* Year-Wise Spend vs revenue Chart */}
-                      <div className="card">
-                        <div className="section-title-bar">
-                          <span className="section-title"><TrendingUp size={16} className="text-blue" /> Year-Wise Azure Cost vs Revenue</span>
-                        </div>
-                        <div style={{ marginTop: '10px' }}>
-                          <SvgDualBarChart
-                            line1={[84000, 96000, adminAzureInvoices.reduce((sum, inv) => sum + inv.azureCost, 0)]}
-                            line2={[98000, 112000, adminAzureInvoices.reduce((sum, inv) => sum + inv.clientRevenue, 0)]}
-                            labels={['2024', '2025', '2026 (YTD)']}
-                            line1Label="Direct Azure Spend"
-                            line2Label="Collected Billings"
-                            line1Color="#8b5cf6"
-                            line2Color="#e91e63"
-                            height={200}
-                          />
-                        </div>
+                      <span>
+                        {filteredInvoices.length === 0 ? '0' : (invoiceCurrentPage - 1) * invoicePageSize + 1}-
+                        {Math.min(filteredInvoices.length, invoiceCurrentPage * invoicePageSize)} of {filteredInvoices.length}
+                      </span>
+                      <div className="pagination-nav">
+                        <button
+                          className="pagination-btn"
+                          disabled={invoiceCurrentPage === 1}
+                          onClick={() => setInvoiceCurrentPage(prev => prev - 1)}
+                        >
+                          &lt;
+                        </button>
+                        <button
+                          className="pagination-btn"
+                          disabled={invoiceCurrentPage >= totalInvoicePages}
+                          onClick={() => setInvoiceCurrentPage(prev => prev + 1)}
+                        >
+                          &gt;
+                        </button>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Full-width Monthly Azure Cost vs Revenue Chart */}
+                  <div className="card">
+                    <div className="section-title-bar">
+                      <span className="section-title">
+                        <TrendingUp size={16} className="text-blue" />
+                        Monthly Azure Cost vs Revenue
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748b' }}>Select Year:</span>
+                        <select
+                          className="toolbar-select"
+                          style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '12px', minWidth: '80px', height: '28px', border: '1px solid #e2e8f0', cursor: 'pointer' }}
+                          value={chartYearFilter}
+                          onChange={(e) => setChartYearFilter(e.target.value)}
+                        >
+                          {availableYears.map(year => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: '10px' }}>
+                      {chartData.labels.length > 0 ? (
+                        <SvgDualBarChart
+                          line1={chartData.line1}
+                          line2={chartData.line2}
+                          labels={chartData.labels}
+                          line1Label="Direct Azure Spend"
+                          line2Label="Collected Billings"
+                          line1Color="#8b5cf6"
+                          line2Color="#e91e63"
+                          height={220}
+                          fontSize={9}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b' }}>
+                          No chart data available for the year {chartYearFilter}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
