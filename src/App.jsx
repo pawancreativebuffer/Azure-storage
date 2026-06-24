@@ -1113,7 +1113,7 @@ function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
 export default function App() {
   const [activeTab, setActiveTab] = useState('client'); // 'client' or 'admin'
   const [clientActiveSection, setClientActiveSection] = useState('billing'); // 'billing', 'forecast', 'infrastructure'
-  const [adminActiveSection, setAdminActiveSection] = useState('profitability'); // 'profitability', 'consumption', 'risk'
+  const [adminActiveSection, setAdminActiveSection] = useState('profitability'); // 'profitability', 'invoices'
   const [customers, setCustomers] = useState(() => {
     return INITIAL_CUSTOMERS.map(c => {
       const storageUsedPct = (c.usageDetails.storage.current / c.usageDetails.storage.limit) * 100;
@@ -1151,6 +1151,57 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [toastMsg, setToastMsg] = useState(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+
+  const [adminAzureInvoices, setAdminAzureInvoices] = useState([
+    { id: 'AZ-INV-2026-06', month: 'June 2026', date: 'Jun 01, 2026', azureCost: 9442, clientRevenue: 10320, status: 'Paid', fileName: 'azure_invoice_june_2026.pdf' },
+    { id: 'AZ-INV-2026-05', month: 'May 2026', date: 'May 01, 2026', azureCost: 9210, clientRevenue: 10210, status: 'Paid', fileName: 'azure_invoice_may_2026.pdf' },
+    { id: 'AZ-INV-2026-04', month: 'April 2026', date: 'Apr 01, 2026', azureCost: 8990, clientRevenue: 9850, status: 'Paid', fileName: 'azure_invoice_apr_2026.pdf' },
+    { id: 'AZ-INV-2026-03', month: 'March 2026', date: 'Mar 01, 2026', azureCost: 9120, clientRevenue: 9940, status: 'Paid', fileName: 'azure_invoice_mar_2026.pdf' },
+    { id: 'AZ-INV-2026-02', month: 'February 2026', date: 'Feb 01, 2026', azureCost: 8750, clientRevenue: 9680, status: 'Paid', fileName: 'azure_invoice_feb_2026.pdf' },
+  ]);
+
+  const handleDownloadAzureInvoice = (invoice) => {
+    const element = document.createElement("a");
+    let file;
+    if (invoice.fileUrl) {
+      element.href = invoice.fileUrl;
+    } else {
+      file = new Blob([
+        `MICROSOFT AZURE ENTERPRISE INVOICE\n=================================\nInvoice ID: ${invoice.id}\nPeriod: ${invoice.month}\nDate Issued: ${invoice.date}\nDirect Azure Infrastructure Spend: $${invoice.azureCost.toLocaleString()}\nTotal Collected Client Billings: $${invoice.clientRevenue.toLocaleString()}\nNet Profit: $${(invoice.clientRevenue - invoice.azureCost).toLocaleString()} (${((invoice.clientRevenue - invoice.azureCost) / invoice.clientRevenue * 100).toFixed(1)}%)\nStatus: ${invoice.status}\n\nThis is a verified cost auditing report.`
+      ], { type: 'text/plain' });
+      element.href = URL.createObjectURL(file);
+    }
+    element.download = invoice.fileName || `${invoice.id}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    setToastMsg(`Downloaded invoice: ${invoice.fileName || invoice.id}`);
+  };
+
+  const handleUploadAzureInvoice = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const nextId = `AZ-INV-2026-${Math.floor(Math.random() * 90 + 10)}`;
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const monthStr = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + ' (Uploaded)';
+    const fileUrl = URL.createObjectURL(file);
+
+    const newInv = {
+      id: nextId,
+      month: monthStr,
+      date: dateStr,
+      azureCost: adminKPIs.azureCost,
+      clientRevenue: adminKPIs.monthlyRevenue,
+      status: 'Paid',
+      fileName: file.name,
+      fileUrl: fileUrl
+    };
+
+    setAdminAzureInvoices(prev => [newInv, ...prev]);
+    setToastMsg(`Uploaded Azure Invoice: ${file.name}`);
+  };
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -1632,18 +1683,11 @@ export default function App() {
                 <span>Profitability Overview</span>
               </button>
               <button
-                className={`sidebar-item ${adminActiveSection === 'consumption' ? 'active' : ''}`}
-                onClick={() => setAdminActiveSection('consumption')}
+                className={`sidebar-item ${adminActiveSection === 'invoices' ? 'active' : ''}`}
+                onClick={() => setAdminActiveSection('invoices')}
               >
-                <Cpu size={15} />
-                <span>Global Resource Consumption</span>
-              </button>
-              <button
-                className={`sidebar-item ${adminActiveSection === 'risk' ? 'active' : ''}`}
-                onClick={() => setAdminActiveSection('risk')}
-              >
-                <AlertTriangle size={15} />
-                <span>Risk & Abuse Monitoring</span>
+                <FileSpreadsheet size={15} />
+                <span>Azure Invoices</span>
               </button>
             </>
           )}
@@ -1764,7 +1808,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Service-by-Service Billing Details (Moved from infrastructure section) */}
+                  {/* Service-by-Service Billing Details */}
                   <div className="card" style={{ marginBottom: '24px', marginTop: '24px' }}>
                     <div className="section-title-bar">
                       <span className="section-title"><Layers size={16} className="text-blue" /> Service-by-Service Billing Details</span>
@@ -1855,6 +1899,7 @@ export default function App() {
                   </div>
                 </div>
               )}
+
             </div>
           )}
 
@@ -1895,52 +1940,37 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="card kpi-card coral">
-                      <div className="kpi-header">
-                        <span>Azure Infrastructure Cost</span>
-                        <Cpu size={14} className="kpi-icon" />
-                      </div>
-                      <span className="kpi-value">${adminKPIs.azureCost.toLocaleString()}</span>
-                      <div className="kpi-footer">
-                        <span className="kpi-trend-down">Actual cloud bill total</span>
-                      </div>
-                    </div>
-
                     <div className="card kpi-card green">
                       <div className="kpi-header">
-                        <span>Net Gross Profit</span>
-                        <DollarSign size={14} className="kpi-icon" />
+                        <span>Monthly Profit</span>
+                        <TrendingUp size={14} className="kpi-icon" />
                       </div>
-                      <span className="kpi-value text-green">${adminKPIs.grossProfit.toLocaleString()}</span>
+                      <span className="kpi-value text-green">
+                        {adminKPIs.grossProfit > 0 ? `+$${adminKPIs.grossProfit.toLocaleString()}` : '$0'}
+                      </span>
                       <div className="kpi-footer">
                         <span className="text-green font-medium">
-                          Margin: {adminKPIs.profitMargin.toFixed(1)}%
+                          {adminKPIs.grossProfit > 0 ? `Margin: +${adminKPIs.profitMargin.toFixed(1)}%` : 'No profit this month'}
                         </span>
                       </div>
                     </div>
 
-                    <div className="card kpi-card">
+                    <div className="card kpi-card coral">
                       <div className="kpi-header">
-                        <span>Overage Billing Revenue</span>
-                        <CreditCard size={14} className="kpi-icon" />
+                        <span>Monthly Loss</span>
+                        <AlertTriangle size={14} className="kpi-icon" />
                       </div>
-                      <span className="kpi-value">${adminKPIs.overageRevenue.toLocaleString()}</span>
+                      <span className="kpi-value text-pink">
+                        {adminKPIs.grossProfit < 0 ? `-$${Math.abs(adminKPIs.grossProfit).toLocaleString()}` : '$0'}
+                      </span>
                       <div className="kpi-footer">
-                        <span className="text-muted">From quota expansions</span>
-                      </div>
-                    </div>
-
-                    <div className="card kpi-card">
-                      <div className="kpi-header">
-                        <span>Active Tenants</span>
-                        <Activity size={14} className="kpi-icon" />
-                      </div>
-                      <span className="kpi-value">{adminKPIs.activeOrgs}</span>
-                      <div className="kpi-footer">
-                        <span className="text-muted">Active deployment nodes</span>
+                        <span className={`font-medium ${adminKPIs.grossProfit < 0 ? 'text-pink' : 'text-muted'}`}>
+                          {adminKPIs.grossProfit < 0 ? `Loss Margin: ${adminKPIs.profitMargin.toFixed(1)}%` : 'No loss this month'}
+                        </span>
                       </div>
                     </div>
                   </div>
+
 
                   {/* Customer Profitability Analysis Table */}
                   <div className="card" style={{ marginBottom: '24px' }}>
@@ -2037,55 +2067,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Highlights Profitability Charts */}
-                  <div className="dashboard-grid-1-1">
-                    <div className="card">
-                      <div className="section-title-bar">
-                        <span className="section-title"><TrendingUp size={15} className="text-green" /> Margin Analysis by Organization</span>
-                        <span className="badge badge-green">Profitability Leaderboard</span>
-                      </div>
-                      <div className="chart-container" style={{ height: '260px', marginTop: '10px' }}>
-                        <SvgProfitMarginChart
-                          data={customers.map(c => {
-                            const totalRev = c.monthlyFee + c.overages;
-                            const profit = totalRev - c.azureCost;
-                            const margin = totalRev > 0 ? (profit / totalRev) * 100 : 0;
-                            return {
-                              name: c.name.split(' ')[0], // short name
-                              margin: margin
-                            };
-                          }).sort((a, b) => b.margin - a.margin)}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="card">
-                      <div className="section-title-bar">
-                        <span className="section-title"><Cpu size={15} className="text-pink" /> Aggregate Cost Over Time</span>
-                        <span className="badge badge-pink">12M cloud growth</span>
-                      </div>
-                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
-                        <SvgLineChart
-                          data={[4500, 4800, 4900, 5200, 5600, 6000, 6200, 6500, 6800, 7100, 7400, adminKPIs.azureCost]}
-                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                          strokeColor="#e91e63"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Section 2: Global Resource Consumption */}
-              {adminActiveSection === 'consumption' && (
-                <div>
-                  <div className="dashboard-header-row">
-                    <div>
-                      <h1 className="page-title">Global Resource Consumption</h1>
-                      <p className="page-subtitle">High-level analysis of storage, bandwidth, and CPU execution metrics across all tenants.</p>
-                    </div>
-                  </div>
-
                   {/* Top Consumers Grid (3 Columns) */}
                   <div className="dashboard-grid-3" style={{ marginBottom: '24px' }}>
                     <div className="card">
@@ -2155,55 +2136,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Visualizations Grid */}
-                  <div className="dashboard-grid-1-1">
-                    <div className="card">
-                      <div className="section-title-bar">
-                        <span className="section-title"><Activity size={15} className="text-blue" /> Global Multi-Tenant Resource Trajectory (12 Months)</span>
-                        <span className="badge badge-blue">Aggregate</span>
-                      </div>
-                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
-                        <SvgDualLineChart
-                          line1={globalStorageTrend}
-                          line2={globalCostTrend}
-                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                          line1Label="Total Storage (GB)"
-                          line2Label="Total Cost ($)"
-                          line1Color="#3b82f6"
-                          line2Color="#10b981"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="card">
-                      <div className="section-title-bar">
-                        <span className="section-title"><Cpu size={15} className="text-pink" /> Total Azure Infrastructure Costs by Organization</span>
-                        <span className="badge badge-pink">Cost Leaderboard</span>
-                      </div>
-                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
-                        <SvgBarChart
-                          data={customers.map(c => ({
-                            name: c.name.split(' ')[0],
-                            value: c.azureCost
-                          })).sort((a, b) => b.value - a.value)}
-                          colors={['#e91e63', '#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#3b82f6']}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Section 3: Risk & Abuse Monitoring */}
-              {adminActiveSection === 'risk' && (
-                <div>
-                  <div className="dashboard-header-row">
-                    <div>
-                      <h1 className="page-title">Risk & Abuse Monitoring</h1>
-                      <p className="page-subtitle">Real-time alerts, threshold violations, and quota safety margin distributions.</p>
-                    </div>
-                  </div>
-
+                  {/* Risk & Abuse Detection and Quota Status Distribution */}
                   <div className="dashboard-grid-2-1" style={{ marginBottom: '24px' }}>
                     <div className="card">
                       <div className="section-title-bar">
@@ -2252,47 +2185,194 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* Highlights Profitability Charts */}
                   <div className="dashboard-grid-1-1">
                     <div className="card">
                       <div className="section-title-bar">
-                        <span className="section-title"><AlertTriangle size={15} className="text-coral" /> Quota Health Score Leaderboard (Lowest Health First)</span>
-                        <span className="badge badge-coral">Risk Metric</span>
+                        <span className="section-title"><TrendingUp size={15} className="text-green" /> Margin Analysis by Organization</span>
+                        <span className="badge badge-green">Profitability Leaderboard</span>
                       </div>
-                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
-                        <SvgBarChart
-                          data={customers.map(c => ({
-                            name: c.name.split(' ')[0],
-                            value: c.quotaScore
-                          })).sort((a, b) => a.value - b.value)}
-                          colors={['#f43f5e', '#be123c', '#f59e0b', '#10b981', '#10b981', '#10b981']}
-                          suffix="%"
+                      <div className="chart-container" style={{ height: '260px', marginTop: '10px' }}>
+                        <SvgProfitMarginChart
+                          data={customers.map(c => {
+                            const totalRev = c.monthlyFee + c.overages;
+                            const profit = totalRev - c.azureCost;
+                            const margin = totalRev > 0 ? (profit / totalRev) * 100 : 0;
+                            return {
+                              name: c.name.split(' ')[0], // short name
+                              margin: margin
+                            };
+                          }).sort((a, b) => b.margin - a.margin)}
                         />
                       </div>
                     </div>
 
                     <div className="card">
                       <div className="section-title-bar">
-                        <span className="section-title"><Info size={16} className="text-blue" /> Global Financial Projections & Health Warnings</span>
-                        <span className="badge badge-blue">Forecast</span>
+                        <span className="section-title"><Cpu size={15} className="text-pink" /> Aggregate Cost Over Time</span>
+                        <span className="badge badge-pink">12M cloud growth</span>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
-                        <div className="forecast-item" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
-                          <span className="forecast-label">Projected Gross Revenue (Next Month)</span>
-                          <span className="forecast-value" style={{ fontSize: '18px' }}>${(adminKPIs.monthlyRevenue * 1.05).toFixed(0)}</span>
+                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
+                        <SvgLineChart
+                          data={[4500, 4800, 4900, 5200, 5600, 6000, 6200, 6500, 6800, 7100, 7400, adminKPIs.azureCost]}
+                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                          strokeColor="#e91e63"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Section 2: Azure Infrastructure Invoices */}
+              {adminActiveSection === 'invoices' && (
+                <div>
+                  <div className="dashboard-header-row">
+                    <div>
+                      <h1 className="page-title">Azure Infrastructure Invoices</h1>
+                      <p className="page-subtitle">Track and audit Microsoft Azure direct subscription costs against client collected revenue.</p>
+                    </div>
+                  </div>
+
+                  <div className="kpi-grid" style={{ marginBottom: '24px' }}>
+                    <div className="card kpi-card">
+                      <div className="kpi-header">
+                        <span>Total Azure Spend (YTD)</span>
+                        <Database size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${(adminAzureInvoices.reduce((sum, inv) => sum + inv.azureCost, 0)).toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Total direct Microsoft billing</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card pink">
+                      <div className="kpi-header">
+                        <span>Collected Client Billings (YTD)</span>
+                        <DollarSign size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${(adminAzureInvoices.reduce((sum, inv) => sum + inv.clientRevenue, 0)).toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="text-green font-medium">+100% collected margin</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card green">
+                      <div className="kpi-header">
+                        <span>Aggregate Margin (YTD)</span>
+                        <TrendingUp size={14} className="kpi-icon" />
+                      </div>
+                      {(() => {
+                        const totalSpend = adminAzureInvoices.reduce((sum, inv) => sum + inv.azureCost, 0);
+                        const totalRev = adminAzureInvoices.reduce((sum, inv) => sum + inv.clientRevenue, 0);
+                        const margin = totalRev > 0 ? ((totalRev - totalSpend) / totalRev * 100).toFixed(1) : 0;
+                        return (
+                          <>
+                            <span className="kpi-value">{margin}%</span>
+                            <div className="kpi-footer">
+                              <span className="text-healthy font-medium">${(totalRev - totalSpend).toLocaleString()} gross profit</span>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  <div className="dashboard-grid-2-1" style={{ marginBottom: '24px' }}>
+                    {/* Left: Invoice list */}
+                    <div className="card">
+                      <div className="section-title-bar">
+                        <span className="section-title"><Layers size={16} className="text-blue" /> Azure Invoice Audit Log</span>
+                      </div>
+                      <div className="table-responsive">
+                        <table className="ticket-table">
+                          <thead>
+                            <tr>
+                              <th>Invoice ID</th>
+                              <th>Billing Period</th>
+                              <th>Date Received</th>
+                              <th>Azure Direct Cost</th>
+                              <th>Client Total Revenue</th>
+                              <th>Audited Margin</th>
+                              <th>Status</th>
+                              <th className="text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {adminAzureInvoices.map((inv) => {
+                              const profit = inv.clientRevenue - inv.azureCost;
+                              const margin = inv.clientRevenue > 0 ? (profit / inv.clientRevenue * 100).toFixed(1) : 0;
+                              return (
+                                <tr key={inv.id} style={{ cursor: 'default' }}>
+                                  <td className="bold-value">{inv.id}</td>
+                                  <td>{inv.month}</td>
+                                  <td>{inv.date}</td>
+                                  <td className="bold-value text-pink">${inv.azureCost.toLocaleString()}</td>
+                                  <td className="bold-value text-green">${inv.clientRevenue.toLocaleString()}</td>
+                                  <td>
+                                    <span className={`status-badge ${parseFloat(margin) > 0 ? 'healthy' : 'loss'}`}>
+                                      {parseFloat(margin) > 0 ? `+${margin}%` : `${margin}%`}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span className="status-badge healthy">
+                                      {inv.status}
+                                    </span>
+                                  </td>
+                                  <td className="text-right">
+                                    <button
+                                      className="btn btn-outline"
+                                      style={{ padding: '4px 8px', fontSize: '11px' }}
+                                      onClick={() => handleDownloadAzureInvoice(inv)}
+                                    >
+                                      <Download size={12} /> Download
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Right: Upload zone & comparison chart */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      {/* Upload Card */}
+                      <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', borderStyle: 'dashed', borderWidth: '2px', borderColor: '#cbd5e1', padding: '24px' }}>
+                        <FileSpreadsheet size={40} className="text-blue" style={{ marginBottom: '12px', opacity: 0.8 }} />
+                        <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '6px' }}>Upload Azure Invoice</h3>
+                        <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '16px', maxWidth: '240px' }}>
+                          Upload the official Microsoft Azure billing receipt PDF to audit multi-tenant consumption.
+                        </p>
+
+                        <label className="btn btn-navy" style={{ cursor: 'pointer', display: 'inline-flex' }}>
+                          <Plus size={14} /> Upload Azure Invoice File
+                          <input
+                            type="file"
+                            accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.txt"
+                            style={{ display: 'none' }}
+                            onChange={handleUploadAzureInvoice}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Year-Wise Spend vs revenue Chart */}
+                      <div className="card">
+                        <div className="section-title-bar">
+                          <span className="section-title"><TrendingUp size={16} className="text-blue" /> Year-Wise Azure Cost vs Revenue</span>
                         </div>
-                        <div className="forecast-item" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
-                          <span className="forecast-label">Projected Azure Cost (Next Month)</span>
-                          <span className="forecast-value text-pink" style={{ fontSize: '18px' }}>${(adminKPIs.azureCost * 1.02).toFixed(0)}</span>
-                        </div>
-                        <div className="forecast-item" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
-                          <span className="forecast-label">Expected Net Margin (Next Month)</span>
-                          <span className="forecast-value text-green" style={{ fontSize: '18px' }}>
-                            {((adminKPIs.monthlyRevenue * 1.05 - adminKPIs.azureCost * 1.02) / (adminKPIs.monthlyRevenue * 1.05) * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="forecast-item" style={{ borderBottom: 'none' }}>
-                          <span className="forecast-label">Organizations Near Limit</span>
-                          <span className="forecast-value text-critical" style={{ fontSize: '18px' }}>3 Accounts</span>
+                        <div style={{ marginTop: '10px' }}>
+                          <SvgDualBarChart
+                            line1={[84000, 96000, adminAzureInvoices.reduce((sum, inv) => sum + inv.azureCost, 0)]}
+                            line2={[98000, 112000, adminAzureInvoices.reduce((sum, inv) => sum + inv.clientRevenue, 0)]}
+                            labels={['2024', '2025', '2026 (YTD)']}
+                            line1Label="Direct Azure Spend"
+                            line2Label="Collected Billings"
+                            line1Color="#8b5cf6"
+                            line2Color="#e91e63"
+                            height={200}
+                          />
                         </div>
                       </div>
                     </div>
@@ -2520,7 +2600,7 @@ export default function App() {
                   setDrawerCustomerId(null);
                 }}
               >
-                Send Invoice Warning
+                Send Invoice
               </button>
             </div>
           </div>
