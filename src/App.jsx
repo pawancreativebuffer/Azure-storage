@@ -916,8 +916,8 @@ function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Co
   const max1 = Math.max(...line1) * 1.15 || 100;
   const max2 = Math.max(...line2) * 1.15 || 100;
 
-  const paddingLeft = 55;
-  const paddingRight = 55;
+  const paddingLeft = 65;
+  const paddingRight = 65;
   const paddingTop = 25;
   const paddingBottom = 30;
 
@@ -938,8 +938,8 @@ function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Co
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-            <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: line1Color, fontSize: `${fontSize}px`, fontWeight: 600 }}>{val1}</text>
-            <text x={chartWidth - paddingRight + 8} y={y + 5} textAnchor="start" style={{ fill: line2Color, fontSize: `${fontSize}px`, fontWeight: 600 }}>{val2}</text>
+            <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: line1Color, fontSize: `${fontSize}px`, fontWeight: 600 }}>{'$' + val1.toLocaleString()}</text>
+            <text x={chartWidth - paddingRight + 8} y={y + 5} textAnchor="start" style={{ fill: line2Color, fontSize: `${fontSize}px`, fontWeight: 600 }}>{'$' + val2.toLocaleString()}</text>
           </g>
         );
       })}
