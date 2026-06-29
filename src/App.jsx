@@ -35,274 +35,254 @@ import './App.css';
 const INITIAL_CUSTOMERS = [
   {
     id: 'acme',
-    name: 'Acme Marketing Corp',
-    planName: 'Business Enterprise Plan',
-    monthlyFee: 1200,
+    name: 'Acme Corporation',
+    planName: 'Store Plan (30 Stores)',
+    monthlyFee: 900,
+    stores: 30,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 1750, // Internal cost to us
-    overages: 252, // Extra charges customer pays
-    quotaScore: 78,
+    azureCost: 357, // Internal cost to us
+    overages: 2231, // Extra charges customer pays
+    quotaScore: 25,
     usageDetails: {
-      storage: { current: 850, limit: 1000, unit: 'GB' },
-      downloads: { current: 450000, limit: 500000, unit: '' },
-      bandwidth: { current: 4.2, limit: 5, unit: 'TB' },
-
-      publishedAssets: { current: 12500, limit: 15000, unit: 'assets' },
-      apiRequests: { current: 8.2, limit: 10, unit: 'M' }
+      storage: { current: 850, limit: 60, unit: 'GB' },
+      downloads: { current: 450000, limit: 150000, unit: '' },
+      bandwidth: { current: 4.2, limit: 0.3, unit: 'TB' },
+      apiRequests: { current: 8.2, limit: 1.5, unit: 'M' }
     },
     breakdown: [
-      { service: 'Blob Storage', included: '1 TB', current: '1.3 TB', remaining: '0 GB', overage: '300 GB', cost: 12 },
-      { service: 'CDN Bandwidth', included: '5 TB', current: '7 TB', remaining: '0 TB', overage: '2 TB', cost: 25 },
-      { service: 'SQL Database', included: '100 GB', current: '120 GB', remaining: '0 GB', overage: '20 GB', cost: 5 },
-      { service: 'API Requests', included: '10 M', current: '12 M', remaining: '0 M', overage: '2 M', cost: 8 },
-      { service: 'Azure Functions', included: '5 M', current: '15 M', remaining: '0 M', overage: '10 M', cost: 40 },
-      { service: 'Networking Egress', included: '1 TB', current: '2.5 TB', remaining: '0 TB', overage: '1.5 TB', cost: 150 },
-      { service: 'Storage Transactions', included: '10 M', current: '22 M', remaining: '0 M', overage: '12 M', cost: 12 }
+      { service: 'Blob Storage', included: '60 GB', current: '850 GB', remaining: '0 GB', overage: '790 GB', cost: 1580 },
+      { service: 'CDN Bandwidth', included: '0.3 TB', current: '4.2 TB', remaining: '0 TB', overage: '3.9 TB', cost: 390 },
+      { service: 'API Requests', included: '1.5 M', current: '8.2 M', remaining: '0 M', overage: '6.7 M', cost: 201 },
+      { service: 'Downloads', included: '150k', current: '450k', remaining: '0k', overage: '300k', cost: 60 }
     ],
     moduleCostSplit: { dam: 420, downloads: 480, api: 242 },
-    azureCostSplit: { storage: 450, cdn: 380, database: 320, functions: 180, networking: 420 },
-    costTrend: [1100, 1150, 1120, 1220, 1250, 1280, 1310, 1340, 1320, 1390, 1410, 1452],
+    azureCostSplit: { storage: 135, cdn: 108, api: 63, downloads: 36 },
+    costTrend: [1100, 1150, 1120, 1220, 1250, 1280, 1310, 1340, 1320, 1390, 1410, 3131],
+    costTrendPreviousYear: [950, 980, 1010, 990, 1020, 1050, 1080, 1110, 1090, 1120, 1140, 1150],
     storageTrend: [620, 640, 660, 690, 710, 730, 760, 780, 800, 810, 830, 850],
     forecast: {
       storage: '920 GB',
       downloads: '495,000',
       bandwidth: '4.6 TB',
-      invoice: '$1,520',
-      daysUntilExhaustion: '9 Days',
-      planUpgradeDiscount: '32%'
+      invoice: '$3,131',
+      daysUntilExhaustion: '0 Days',
+      planUpgradeDiscount: '45%'
     },
     alerts: [
-      { id: 1, type: 'critical', msg: 'Storage usage has exceeded 85% of allocated plan limit.' },
-      { id: 2, type: 'critical', msg: 'Downloads approaching limit (90% utilized). Upgrade recommended.' },
-      { id: 3, type: 'warning', msg: 'Bandwidth usage is nearing its quota (84% used).' },
-      { id: 4, type: 'warning', msg: 'Additional Azure consumption overage charges of $252 expected this month.' },
+      { id: 1, type: 'critical', msg: 'Storage usage has exceeded 100% of allocated plan limit.' },
+      { id: 2, type: 'critical', msg: 'Downloads approaching limit (300% utilized).' },
+      { id: 3, type: 'warning', msg: 'Bandwidth usage is nearing its quota.' },
+      { id: 4, type: 'warning', msg: 'Additional Azure consumption overage charges of $2,231 expected this month.' }
     ]
   },
   {
     id: 'globetech',
     name: 'GlobeTech Solutions',
-    planName: 'Business Plus Plan',
-    monthlyFee: 800,
+    planName: 'Store Plan (20 Stores)',
+    monthlyFee: 600,
+    stores: 20,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 380,
-    overages: 0,
-    quotaScore: 92,
+    azureCost: 243,
+    overages: 749,
+    quotaScore: 35,
     usageDetails: {
-      storage: { current: 310, limit: 500, unit: 'GB' },
-      downloads: { current: 155000, limit: 250000, unit: '' },
-      bandwidth: { current: 1.55, limit: 2.5, unit: 'TB' },
-
-      publishedAssets: { current: 4600, limit: 7500, unit: 'assets' },
-      apiRequests: { current: 3.1, limit: 5, unit: 'M' }
+      storage: { current: 310, limit: 40, unit: 'GB' },
+      downloads: { current: 155000, limit: 100000, unit: '' },
+      bandwidth: { current: 1.55, limit: 0.2, unit: 'TB' },
+      apiRequests: { current: 3.1, limit: 1.0, unit: 'M' }
     },
     breakdown: [
-      { service: 'Blob Storage', included: '500 GB', current: '310 GB', remaining: '190 GB', overage: '0 GB', cost: 0 },
-      { service: 'CDN Bandwidth', included: '2.5 TB', current: '1.55 TB', remaining: '0.95 TB', overage: '0 TB', cost: 0 },
-      { service: 'SQL Database', included: '50 GB', current: '42 GB', remaining: '8 GB', overage: '0 GB', cost: 0 },
-      { service: 'API Requests', included: '5 M', current: '3.1 M', remaining: '1.9 M', overage: '0 M', cost: 0 },
-      { service: 'Azure Functions', included: '2.5 M', current: '1.8 M', remaining: '0.7 M', overage: '0 M', cost: 0 },
-      { service: 'Networking Egress', included: '500 GB', current: '480 GB', remaining: '20 GB', overage: '0 GB', cost: 0 },
-      { service: 'Storage Transactions', included: '5 M', current: '4.1 M', remaining: '0.9 M', overage: '0 M', cost: 0 }
+      { service: 'Blob Storage', included: '40 GB', current: '310 GB', remaining: '0 GB', overage: '270 GB', cost: 540 },
+      { service: 'CDN Bandwidth', included: '0.2 TB', current: '1.55 TB', remaining: '0 TB', overage: '1.35 TB', cost: 135 },
+      { service: 'API Requests', included: '1.0 M', current: '3.1 M', remaining: '0 M', overage: '2.1 M', cost: 63 },
+      { service: 'Downloads', included: '100k', current: '155k', remaining: '0k', overage: '55k', cost: 11 }
     ],
     moduleCostSplit: { dam: 180, downloads: 220, api: 90 },
-    azureCostSplit: { storage: 120, cdn: 90, database: 80, functions: 50, networking: 40 },
-    costTrend: [350, 360, 340, 355, 370, 365, 380, 375, 360, 380, 390, 380],
+    azureCostSplit: { storage: 90, cdn: 72, api: 42, downloads: 24 },
+    costTrend: [350, 360, 340, 355, 370, 365, 380, 375, 360, 380, 390, 1349],
+    costTrendPreviousYear: [310, 315, 320, 330, 325, 335, 340, 345, 330, 340, 350, 345],
     storageTrend: [250, 255, 260, 270, 275, 280, 290, 295, 300, 305, 308, 310],
     forecast: {
       storage: '325 GB',
       downloads: '170,000',
       bandwidth: '1.7 TB',
-      invoice: '$800',
-      daysUntilExhaustion: 'None',
-      planUpgradeDiscount: '0%'
+      invoice: '$1,349',
+      daysUntilExhaustion: '0 Days',
+      planUpgradeDiscount: '40%'
     },
     alerts: [
-      { id: 1, type: 'healthy', msg: 'All resource usage thresholds are within acceptable plan parameters.' }
+      { id: 1, type: 'critical', msg: 'Storage usage has exceeded 100% of your base plan limit.' },
+      { id: 2, type: 'warning', msg: 'Additional Azure consumption overage charges of $749 expected this month.' }
     ]
   },
   {
     id: 'nova',
     name: 'Nova Creative Agency',
-    planName: 'Pro Startup Plan',
-    monthlyFee: 400,
+    planName: 'Store Plan (10 Stores)',
+    monthlyFee: 300,
+    stores: 10,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 490,
-    overages: 120,
-    quotaScore: 81,
+    azureCost: 129,
+    overages: 550,
+    quotaScore: 30,
     usageDetails: {
-      storage: { current: 180, limit: 200, unit: 'GB' },
-      downloads: { current: 95000, limit: 100000, unit: '' },
-      bandwidth: { current: 0.92, limit: 1, unit: 'TB' },
-
-      publishedAssets: { current: 2800, limit: 3000, unit: 'assets' },
-      apiRequests: { current: 1.8, limit: 2, unit: 'M' }
+      storage: { current: 230, limit: 20, unit: 'GB' },
+      downloads: { current: 95000, limit: 50000, unit: '' },
+      bandwidth: { current: 0.92, limit: 0.1, unit: 'TB' },
+      apiRequests: { current: 1.8, limit: 0.5, unit: 'M' }
     },
     breakdown: [
-      { service: 'Blob Storage', included: '200 GB', current: '230 GB', remaining: '0 GB', overage: '30 GB', cost: 12 },
-      { service: 'CDN Bandwidth', included: '1 TB', current: '1.2 TB', remaining: '0 TB', overage: '0.2 TB', cost: 20 },
-      { service: 'SQL Database', included: '20 GB', current: '28 GB', remaining: '0 GB', overage: '8 GB', cost: 18 },
-      { service: 'API Requests', included: '2 M', current: '2.5 M', remaining: '0 M', overage: '0.5 M', cost: 15 },
-      { service: 'Azure Functions', included: '1 M', current: '2.2 M', remaining: '0 M', overage: '1.2 M', cost: 55 },
-      { service: 'Networking Egress', included: '200 GB', current: '200 GB', remaining: '0 GB', overage: '0 GB', cost: 0 },
-      { service: 'Storage Transactions', included: '2 M', current: '2 M', remaining: '0 M', overage: '0 M', cost: 0 }
+      { service: 'Blob Storage', included: '20 GB', current: '230 GB', remaining: '0 GB', overage: '210 GB', cost: 420 },
+      { service: 'CDN Bandwidth', included: '0.1 TB', current: '0.92 TB', remaining: '0 TB', overage: '0.82 TB', cost: 82 },
+      { service: 'API Requests', included: '0.5 M', current: '1.8 M', remaining: '0 M', overage: '1.3 M', cost: 39 },
+      { service: 'Downloads', included: '50k', current: '95k', remaining: '0k', overage: '45k', cost: 9 }
     ],
     moduleCostSplit: { dam: 180, downloads: 140, api: 80 },
-    azureCostSplit: { storage: 150, cdn: 110, database: 90, functions: 80, networking: 60 },
-    costTrend: [380, 395, 410, 420, 430, 445, 450, 460, 455, 470, 480, 490],
+    azureCostSplit: { storage: 45, cdn: 36, api: 21, downloads: 12 },
+    costTrend: [380, 395, 410, 420, 430, 445, 450, 460, 455, 470, 480, 850],
+    costTrendPreviousYear: [320, 330, 340, 345, 350, 360, 355, 365, 370, 375, 380, 375],
     storageTrend: [110, 120, 125, 130, 142, 150, 155, 160, 168, 172, 175, 180],
     forecast: {
       storage: '205 GB',
       downloads: '105,000',
       bandwidth: '1.05 TB',
-      invoice: '$520',
-      daysUntilExhaustion: '4 Days',
-      planUpgradeDiscount: '28%'
+      invoice: '$850',
+      daysUntilExhaustion: '0 Days',
+      planUpgradeDiscount: '35%'
     },
     alerts: [
-      { id: 1, type: 'critical', msg: 'Storage usage has exceeded 90% of your plan limit.' },
-      { id: 2, type: 'warning', msg: 'Azure resources cost ($490) exceeds your subscription plan price ($400).' },
-      { id: 3, type: 'warning', msg: 'API executions spike detected in the last 48 hours.' }
+      { id: 1, type: 'critical', msg: 'Storage usage has exceeded 100% of your plan limit.' },
+      { id: 2, type: 'warning', msg: 'Azure resources cost exceeds your subscription plan price.' }
     ]
   },
   {
     id: 'apex',
     name: 'Apex Retailers',
-    planName: 'Business Enterprise Plan',
+    planName: 'Store Plan (40 Stores)',
     monthlyFee: 1200,
+    stores: 40,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 850,
-    overages: 50,
-    quotaScore: 88,
+    azureCost: 471,
+    overages: 1854,
+    quotaScore: 32,
     usageDetails: {
-      storage: { current: 740, limit: 1000, unit: 'GB' },
-      downloads: { current: 360000, limit: 500000, unit: '' },
-      bandwidth: { current: 3.8, limit: 5, unit: 'TB' },
-
-      publishedAssets: { current: 11100, limit: 15000, unit: 'assets' },
-      apiRequests: { current: 7.4, limit: 10, unit: 'M' }
+      storage: { current: 740, limit: 80, unit: 'GB' },
+      downloads: { current: 360000, limit: 200000, unit: '' },
+      bandwidth: { current: 3.8, limit: 0.4, unit: 'TB' },
+      apiRequests: { current: 7.4, limit: 2.0, unit: 'M' }
     },
     breakdown: [
-      { service: 'Blob Storage', included: '1 TB', current: '740 GB', remaining: '260 GB', overage: '0 GB', cost: 0 },
-      { service: 'CDN Bandwidth', included: '5 TB', current: '3.8 TB', remaining: '1.2 TB', overage: '0 TB', cost: 0 },
-      { service: 'SQL Database', included: '100 GB', current: '110 GB', remaining: '0 GB', overage: '10 GB', cost: 50 },
-      { service: 'API Requests', included: '10 M', current: '7.4 M', remaining: '2.6 M', overage: '0 M', cost: 0 },
-      { service: 'Azure Functions', included: '5 M', current: '4.5 M', remaining: '0.5 M', overage: '0 M', cost: 0 },
-      { service: 'Networking Egress', included: '1 TB', current: '820 GB', remaining: '180 GB', overage: '0 GB', cost: 0 },
-      { service: 'Storage Transactions', included: '10 M', current: '8.8 M', remaining: '1.2 M', overage: '0 M', cost: 0 }
+      { service: 'Blob Storage', included: '80 GB', current: '740 GB', remaining: '0 GB', overage: '660 GB', cost: 1320 },
+      { service: 'CDN Bandwidth', included: '0.4 TB', current: '3.8 TB', remaining: '0 TB', overage: '3.4 TB', cost: 340 },
+      { service: 'API Requests', included: '2.0 M', current: '7.4 M', remaining: '0 M', overage: '5.4 M', cost: 162 },
+      { service: 'Downloads', included: '200k', current: '360k', remaining: '0k', overage: '160k', cost: 32 }
     ],
     moduleCostSplit: { dam: 310, downloads: 180, api: 120 },
-    azureCostSplit: { storage: 280, cdn: 210, database: 190, functions: 110, networking: 60 },
-    costTrend: [780, 790, 810, 800, 820, 830, 840, 835, 840, 845, 860, 850],
+    azureCostSplit: { storage: 180, cdn: 144, api: 84, downloads: 48 },
+    costTrend: [780, 790, 810, 800, 820, 830, 840, 835, 840, 845, 860, 3054],
+    costTrendPreviousYear: [680, 700, 710, 720, 730, 740, 750, 745, 755, 760, 770, 765],
     storageTrend: [610, 625, 630, 642, 660, 675, 690, 705, 715, 722, 735, 740],
     forecast: {
       storage: '780 GB',
       downloads: '390,000',
       bandwidth: '4.1 TB',
-      invoice: '$1,250',
-      daysUntilExhaustion: 'None',
-      planUpgradeDiscount: '0%'
+      invoice: '$3,054',
+      daysUntilExhaustion: '0 Days',
+      planUpgradeDiscount: '42%'
     },
     alerts: [
-      { id: 1, type: 'healthy', msg: 'All metrics are performing inside optimal quota boundaries.' }
+      { id: 1, type: 'critical', msg: 'Storage usage has exceeded 100% of your plan limit.' },
+      { id: 2, type: 'warning', msg: 'Azure resources cost exceeds your subscription plan price.' }
     ]
   },
   {
     id: 'summit',
     name: 'Summit Health Group',
-    planName: 'Business Plus Plan',
-    monthlyFee: 800,
+    planName: 'Store Plan (20 Stores)',
+    monthlyFee: 600,
+    stores: 20,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 1150,
-    overages: 450,
-    quotaScore: 71,
+    azureCost: 243,
+    overages: 1247,
+    quotaScore: 28,
     usageDetails: {
-      storage: { current: 480, limit: 500, unit: 'GB' },
-      downloads: { current: 240000, limit: 250000, unit: '' },
-      bandwidth: { current: 2.45, limit: 2.5, unit: 'TB' },
-
-      publishedAssets: { current: 6900, limit: 7500, unit: 'assets' },
-      apiRequests: { current: 4.8, limit: 5, unit: 'M' }
+      storage: { current: 480, limit: 40, unit: 'GB' },
+      downloads: { current: 240000, limit: 100000, unit: '' },
+      bandwidth: { current: 2.45, limit: 0.2, unit: 'TB' },
+      apiRequests: { current: 4.8, limit: 1.0, unit: 'M' }
     },
     breakdown: [
-      { service: 'Blob Storage', included: '500 GB', current: '620 GB', remaining: '0 GB', overage: '120 GB', cost: 120 },
-      { service: 'CDN Bandwidth', included: '2.5 TB', current: '3.1 TB', remaining: '0 TB', overage: '0.6 TB', cost: 80 },
-      { service: 'SQL Database', included: '50 GB', current: '85 GB', remaining: '0 GB', overage: '35 GB', cost: 150 },
-      { service: 'API Requests', included: '5 M', current: '6.5 M', remaining: '0 M', overage: '1.5 M', cost: 60 },
-      { service: 'Azure Functions', included: '2.5 M', current: '3.8 M', remaining: '0 M', overage: '1.3 M', cost: 40 },
-      { service: 'Networking Egress', included: '500 GB', current: '500 GB', remaining: '0 GB', overage: '0 GB', cost: 0 },
-      { service: 'Storage Transactions', included: '5 M', current: '5 M', remaining: '0 M', overage: '0 M', cost: 0 }
+      { service: 'Blob Storage', included: '40 GB', current: '480 GB', remaining: '0 GB', overage: '440 GB', cost: 880 },
+      { service: 'CDN Bandwidth', included: '0.2 TB', current: '2.45 TB', remaining: '0 TB', overage: '2.25 TB', cost: 225 },
+      { service: 'API Requests', included: '1.0 M', current: '4.8 M', remaining: '0 M', overage: '3.8 M', cost: 114 },
+      { service: 'Downloads', included: '100k', current: '240k', remaining: '0k', overage: '140k', cost: 28 }
     ],
     moduleCostSplit: { dam: 390, downloads: 310, api: 170 },
-    azureCostSplit: { storage: 380, cdn: 270, database: 260, functions: 140, networking: 100 },
-    costTrend: [920, 950, 970, 990, 1010, 1050, 1070, 1090, 1110, 1120, 1140, 1150],
+    azureCostSplit: { storage: 90, cdn: 72, api: 42, downloads: 24 },
+    costTrend: [920, 950, 970, 990, 1010, 1050, 1070, 1090, 1110, 1120, 1140, 1847],
+    costTrendPreviousYear: [800, 820, 830, 850, 860, 880, 890, 910, 895, 920, 915, 930],
     storageTrend: [380, 395, 410, 420, 430, 440, 450, 455, 462, 470, 475, 480],
     forecast: {
       storage: '515 GB',
       downloads: '255,000',
       bandwidth: '2.6 TB',
-      invoice: '$1,350',
-      daysUntilExhaustion: '2 Days',
-      planUpgradeDiscount: '45%'
+      invoice: '$1,847',
+      daysUntilExhaustion: '0 Days',
+      planUpgradeDiscount: '50%'
     },
     alerts: [
-      { id: 1, type: 'critical', msg: 'Customer is generating a loss due to high Azure costs ($1,150) relative to subscription fee ($800).' },
-      { id: 2, type: 'critical', msg: 'Storage usage has reached 96% of current limits.' },
-      { id: 3, type: 'warning', msg: 'Bandwidth usage is at 98% of the monthly plan threshold.' }
+      { id: 1, type: 'critical', msg: 'Customer is generating a loss due to high Azure costs.' },
+      { id: 2, type: 'critical', msg: 'Storage usage has reached 1200% of current limits.' }
     ]
   },
   {
     id: 'starlight',
     name: 'Starlight Entertainment',
-    planName: 'Enterprise Custom',
-    monthlyFee: 2500,
+    planName: 'Store Plan (70 Stores)',
+    monthlyFee: 2100,
+    stores: 70,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 3100,
-    overages: 800,
-    quotaScore: 73,
+    azureCost: 813,
+    overages: 7731,
+    quotaScore: 22,
     usageDetails: {
-      storage: { current: 2850, limit: 3000, unit: 'GB' },
-      downloads: { current: 1450000, limit: 1500000, unit: '' },
-      bandwidth: { current: 14.2, limit: 15, unit: 'TB' },
-
-      publishedAssets: { current: 42500, limit: 45000, unit: 'assets' },
-      apiRequests: { current: 28.2, limit: 30, unit: 'M' }
+      storage: { current: 2850, limit: 140, unit: 'GB' },
+      downloads: { current: 1450000, limit: 350000, unit: '' },
+      bandwidth: { current: 14.2, limit: 0.7, unit: 'TB' },
+      apiRequests: { current: 28.2, limit: 3.5, unit: 'M' }
     },
     breakdown: [
-      { service: 'Blob Storage', included: '3 TB', current: '3.4 TB', remaining: '0 TB', overage: '0.4 TB', cost: 160 },
-      { service: 'CDN Bandwidth', included: '15 TB', current: '18 TB', remaining: '0 TB', overage: '3 TB', cost: 300 },
-      { service: 'SQL Database', included: '300 GB', current: '350 GB', remaining: '0 GB', overage: '50 GB', cost: 200 },
-      { service: 'API Requests', included: '30 M', current: '34 M', remaining: '0 M', overage: '4 M', cost: 120 },
-      { service: 'Azure Functions', included: '15 M', current: '16 M', remaining: '0 M', overage: '1 M', cost: 20 },
-      { service: 'Networking Egress', included: '3 TB', current: '3 TB', remaining: '0 TB', overage: '0 TB', cost: 0 },
-      { service: 'Storage Transactions', included: '30 M', current: '30 M', remaining: '0 M', overage: '0 M', cost: 0 }
+      { service: 'Blob Storage', included: '140 GB', current: '2850 GB', remaining: '0 GB', overage: '2710 GB', cost: 5420 },
+      { service: 'CDN Bandwidth', included: '0.7 TB', current: '14.2 TB', remaining: '0 TB', overage: '13.5 TB', cost: 1350 },
+      { service: 'API Requests', included: '3.5 M', current: '28.2 M', remaining: '0 M', overage: '24.7 M', cost: 741 },
+      { service: 'Downloads', included: '350k', current: '1.45M', remaining: '0k', overage: '1100k', cost: 220 }
     ],
     moduleCostSplit: { dam: 1100, downloads: 900, api: 300 },
-    azureCostSplit: { storage: 950, cdn: 820, database: 700, functions: 380, networking: 250 },
-    costTrend: [2600, 2700, 2750, 2800, 2900, 2950, 3000, 3050, 3020, 3080, 3120, 3100],
+    azureCostSplit: { storage: 315, cdn: 252, api: 147, downloads: 84 },
+    costTrend: [2600, 2700, 2750, 2800, 2900, 2950, 3000, 3050, 3020, 3080, 3120, 9831],
+    costTrendPreviousYear: [2100, 2200, 2250, 2300, 2350, 2400, 2450, 2500, 2480, 2550, 2580, 2600],
     storageTrend: [2100, 2150, 2200, 2300, 2400, 2480, 2550, 2600, 2680, 2750, 2800, 2850],
     forecast: {
       storage: '3,050 GB',
       downloads: '1,520,000',
       bandwidth: '15.1 TB',
-      invoice: '$3,400',
-      daysUntilExhaustion: '3 Days',
-      planUpgradeDiscount: '35%'
+      invoice: '$9,831',
+      daysUntilExhaustion: '0 Days',
+      planUpgradeDiscount: '55%'
     },
     alerts: [
-      { id: 1, type: 'critical', msg: 'Abnormal downloads spike detected: Storage transactions increased by 250% in 12 hours.' },
-      { id: 2, type: 'critical', msg: 'Bandwidth abuse alert: Multiple repeat requests detected from single IP segment.' },
-      { id: 3, type: 'warning', msg: 'Usage is at 95% across three major Azure resource limits.' }
+      { id: 1, type: 'critical', msg: 'Customer is generating a loss due to high Azure costs relative to subscription fee.' },
+      { id: 2, type: 'critical', msg: 'Storage usage has reached 2035% of current limits.' }
     ]
   }
 ];
 
-// Interactive Custom SVG Charts
 function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb', fullWidth = false }) {
   if (!data || data.length === 0) return null;
   const maxVal = Math.max(...data) * 1.15 || 100;
@@ -313,7 +293,7 @@ function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb', ful
   const paddingBottom = 30;
 
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 800;
+  const chartWidth = 1000;
 
   const points = data.map((val, index) => {
     const x = paddingLeft + (index / (data.length - 1)) * (chartWidth - paddingLeft - paddingRight);
@@ -347,7 +327,7 @@ function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb', ful
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} className="chart-grid-line" stroke="#f1f5f9" strokeWidth="1" />
-            <text x={paddingLeft - 8} y={y + 5} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '12px' }}>${val.toLocaleString()}</text>
+            <text x={paddingLeft - 8} y={y + 4} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>${val.toLocaleString()}</text>
           </g>
         );
       })}
@@ -373,7 +353,7 @@ function SvgLineChart({ data, labels, height = 180, strokeColor = '#2563eb', ful
             strokeWidth="2"
             className="chart-dot"
           />
-          <text x={p.x} y={height - 8} className="chart-axis-text" textAnchor="middle" style={{ fill: '#64748b', fontSize: '12px', fontWeight: 500 }}>
+          <text x={p.x} y={height - 8} className="chart-axis-text" textAnchor="middle" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 500 }}>
             {p.label}
           </text>
         </g>
@@ -450,7 +430,7 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
   const paddingBottom = isHorizontal ? 20 : 40;
 
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 800;
+  const chartWidth = 1000;
 
   return (
     <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
@@ -464,12 +444,12 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
 
             return (
               <g key={index}>
-                <text x={paddingLeft - 10} y={y + barHeight / 2 + 5} textAnchor="end" style={{ fill: '#334155', fontSize: '14px', fontWeight: 600 }}>
+                <text x={paddingLeft - 10} y={y + barHeight / 2 + 4} textAnchor="end" style={{ fill: '#334155', fontSize: '10px', fontWeight: 600 }}>
                   {item.name}
                 </text>
                 <rect x={paddingLeft} y={y} width={chartWidth - paddingLeft - paddingRight} height={barHeight} rx={barHeight / 2} fill="#f1f5f9" />
                 <rect x={paddingLeft} y={y} width={Math.max(barHeight, barWidth)} height={barHeight} rx={barHeight / 2} fill={barColor} />
-                <text x={paddingLeft + barWidth + 8} y={y + barHeight / 2 + 5} style={{ fill: '#0f172a', fontSize: '14px', fontWeight: 700 }}>
+                <text x={paddingLeft + barWidth + 8} y={y + barHeight / 2 + 4} style={{ fill: '#0f172a', fontSize: '10px', fontWeight: 700 }}>
                   {item.value.toLocaleString()}{suffix}
                 </text>
               </g>
@@ -485,7 +465,7 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
             return (
               <g key={i}>
                 <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-                <text x={paddingLeft - 8} y={y + 5} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '14px' }}>{val}</text>
+                <text x={paddingLeft - 8} y={y + 4} textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>{val}</text>
               </g>
             );
           })}
@@ -499,10 +479,10 @@ function SvgBarChart({ data, height = 180, colors = ['#2563eb'], isHorizontal = 
             return (
               <g key={index}>
                 <rect x={x} y={y} width={barWidth} height={Math.max(4, barHeight)} rx={4} fill={barColor} />
-                <text x={x + barWidth / 2} y={height - paddingBottom + 20} textAnchor="middle" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>
+                <text x={x + barWidth / 2} y={height - paddingBottom + 18} textAnchor="middle" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 600 }}>
                   {item.name}
                 </text>
-                <text x={x + barWidth / 2} y={y - 8} textAnchor="middle" style={{ fill: '#0f172a', fontSize: '14px', fontWeight: 700 }}>
+                <text x={x + barWidth / 2} y={y - 8} textAnchor="middle" style={{ fill: '#0f172a', fontSize: '10px', fontWeight: 700 }}>
                   {item.value.toLocaleString()}{suffix}
                 </text>
               </g>
@@ -583,7 +563,7 @@ function SvgPredictiveChart({ historical, projected, limit, limitLabel, height =
   const paddingTop = 20;
   const paddingBottom = 35;
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = 800;
+  const chartWidth = 1000;
 
   const histPoints = historical.map((val, index) => {
     const x = paddingLeft + (index / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight);
@@ -626,13 +606,13 @@ function SvgPredictiveChart({ historical, projected, limit, limitLabel, height =
         return (
           <g key={i}>
             <line x1={paddingLeft} y1={y} x2={chartWidth - paddingRight} y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-            <text x={paddingLeft - 8} y={y + 5} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '14px' }}>{val}</text>
+            <text x={paddingLeft - 8} y={y + 4} className="chart-axis-text" textAnchor="end" style={{ fill: '#94a3b8', fontSize: '10px' }}>{val}</text>
           </g>
         );
       })}
 
       <line x1={paddingLeft} y1={limitY} x2={chartWidth - paddingRight} y2={limitY} stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="5 3" />
-      <text x={chartWidth - paddingRight - 5} y={limitY - 8} textAnchor="end" style={{ fill: '#f43f5e', fontSize: '14px', fontWeight: 700 }}>
+      <text x={chartWidth - paddingRight - 5} y={limitY - 8} textAnchor="end" style={{ fill: '#f43f5e', fontSize: '10px', fontWeight: 700 }}>
         LIMIT: {limit} {unit}
       </text>
 
@@ -659,27 +639,27 @@ function SvgPredictiveChart({ historical, projected, limit, limitLabel, height =
           <circle cx={intersectionPoint.x} cy={intersectionPoint.y} r="6" fill="#f43f5e" stroke="#ffffff" strokeWidth="2" />
           <line x1={intersectionPoint.x} y1={intersectionPoint.y} x2={intersectionPoint.x} y2={height - paddingBottom} stroke="#f43f5e" strokeWidth="1" strokeDasharray="2 2" />
           <rect x={intersectionPoint.x - 70} y={intersectionPoint.y - 36} width="140" height="28" rx="4" fill="#0f172a" />
-          <text x={intersectionPoint.x} y={intersectionPoint.y - 18} textAnchor="middle" style={{ fill: '#ffffff', fontSize: '12px', fontWeight: 700 }}>
+          <text x={intersectionPoint.x} y={intersectionPoint.y - 18} textAnchor="middle" style={{ fill: '#ffffff', fontSize: '10px', fontWeight: 700 }}>
             Exhaustion Day
           </text>
         </g>
       )}
 
-      <text x={paddingLeft + ((historical.length - 1) / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 8} textAnchor="middle" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 700 }}>
+      <text x={paddingLeft + ((historical.length - 1) / (allData.length - 1)) * (chartWidth - paddingLeft - paddingRight)} y={height - 8} textAnchor="middle" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 700 }}>
         Today
       </text>
-      <text x={paddingLeft} y={height - 8} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '14px' }}>
+      <text x={paddingLeft} y={height - 8} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '10px' }}>
         12M Ago
       </text>
-      <text x={chartWidth - paddingRight} y={height - 8} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '14px' }}>
+      <text x={chartWidth - paddingRight} y={height - 8} textAnchor="middle" style={{ fill: '#94a3b8', fontSize: '10px' }}>
         +30D Forecast
       </text>
 
       <g transform={`translate(${paddingLeft + 10}, 10)`}>
         <line x1="0" y1="5" x2="20" y2="5" stroke={strokeColor} strokeWidth="2" />
-        <text x="25" y="9" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Historical</text>
+        <text x="25" y="9" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 600 }}>Historical</text>
         <line x1="120" y1="5" x2="140" y2="5" stroke={strokeColor} strokeWidth="2" strokeDasharray="3 3" />
-        <text x="145" y="9" style={{ fill: '#64748b', fontSize: '14px', fontWeight: 600 }}>Projected</text>
+        <text x="145" y="9" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 600 }}>Projected</text>
       </g>
     </svg>
   );
@@ -1144,6 +1124,205 @@ export default function App() {
   const [selectedCustomerId, setSelectedCustomerId] = useState('acme');
   const [drawerCustomerId, setDrawerCustomerId] = useState(null);
 
+  // Company Registration & Cost Calculator State
+  const [regStores, setRegStores] = useState(10);
+  const [regStorageUpgrade, setRegStorageUpgrade] = useState(0); // extra GB
+  const [regBandwidthUpgrade, setRegBandwidthUpgrade] = useState(0); // extra GB
+  const [regApiUpgrade, setRegApiUpgrade] = useState(0); // extra API calls
+  const [regDownloadsUpgrade, setRegDownloadsUpgrade] = useState(0); // extra downloads
+
+  const openUpgradeModal = () => {
+    const activeCust = customers.find(c => c.id === selectedCustomerId) || customers[0];
+    if (!activeCust) return;
+
+    const sCount = activeCust.stores || 10;
+
+    setRegStores(sCount);
+    setRegStorageUpgrade(0);
+    setRegBandwidthUpgrade(0);
+    setRegApiUpgrade(0);
+    setRegDownloadsUpgrade(0);
+
+    setUpgradeModalOpen(true);
+  };
+
+  const handleUpgradePlan = (e) => {
+    if (e) e.preventDefault();
+
+    const activeCust = customers.find(c => c.id === selectedCustomerId) || customers[0];
+    if (!activeCust) return;
+
+    const storesCount = parseInt(regStores) || 1;
+
+    // Price calculations
+    const basePrice = storesCount * 30;
+    const storageCost = regStorageUpgrade * 2;
+    const bandwidthCost = regBandwidthUpgrade * 0.1;
+    const apiCost = (regApiUpgrade / 100000) * 3;
+    const downloadsCost = (regDownloadsUpgrade / 10000) * 2;
+    const totalMonthlyFee = Math.round(basePrice + storageCost + bandwidthCost + apiCost + downloadsCost);
+
+    // Dynamic limits
+    const storageLimit = (storesCount * 2) + regStorageUpgrade;
+    const bandwidthLimit = (storesCount * 10) + regBandwidthUpgrade;
+    const apiLimit = (storesCount * 50000) + regApiUpgrade;
+    const downloadsLimit = (storesCount * 5000) + regDownloadsUpgrade;
+
+    setCustomers(prev => prev.map(c => {
+      if (c.id === selectedCustomerId) {
+        const updatedStorage = {
+          ...c.usageDetails.storage,
+          limit: storageLimit
+        };
+        const updatedDownloads = {
+          ...c.usageDetails.downloads,
+          limit: downloadsLimit
+        };
+        const updatedBandwidth = {
+          ...c.usageDetails.bandwidth,
+          limit: Math.round((bandwidthLimit / 1000) * 100) / 100
+        };
+        const updatedPublishedAssets = {
+          ...c.usageDetails.publishedAssets,
+          limit: storesCount * 500
+        };
+        const updatedApiRequests = {
+          ...c.usageDetails.apiRequests,
+          limit: Math.round((apiLimit / 1000000) * 10) / 10
+        };
+
+        // Recalculate overages
+        let storageOverageCost = 0;
+        let storageOverageQty = 0;
+        if (c.usageDetails.storage.current > storageLimit) {
+          storageOverageQty = c.usageDetails.storage.current - storageLimit;
+          storageOverageCost = Math.round(storageOverageQty * 2);
+        }
+
+        let bandwidthOverageCost = 0;
+        let bandwidthOverageQty = 0;
+        const currentBandwidthGB = c.usageDetails.bandwidth.current * 1000;
+        if (currentBandwidthGB > bandwidthLimit) {
+          bandwidthOverageQty = currentBandwidthGB - bandwidthLimit;
+          bandwidthOverageCost = Math.round(bandwidthOverageQty * 0.1);
+        }
+
+        let apiOverageCost = 0;
+        let apiOverageQty = 0;
+        const currentApiRequests = c.usageDetails.apiRequests.current * 1000000;
+        if (currentApiRequests > apiLimit) {
+          apiOverageQty = currentApiRequests - apiLimit;
+          apiOverageCost = Math.round((apiOverageQty / 100000) * 3);
+        }
+
+        let downloadsOverageCost = 0;
+        let downloadsOverageQty = 0;
+        if (c.usageDetails.downloads.current > downloadsLimit) {
+          downloadsOverageQty = c.usageDetails.downloads.current - downloadsLimit;
+          downloadsOverageCost = Math.round((downloadsOverageQty / 10000) * 2);
+        }
+
+        const totalOverages = storageOverageCost + bandwidthOverageCost + apiOverageCost + downloadsOverageCost;
+
+        // Build updated breakdown
+        const updatedBreakdown = c.breakdown.map(item => {
+          if (item.service === 'Blob Storage') {
+            return {
+              ...item,
+              included: `${Math.round(storageLimit)} GB`,
+              remaining: `${Math.max(0, Math.round(storageLimit - c.usageDetails.storage.current))} GB`,
+              overage: `${Math.round(storageOverageQty)} GB`,
+              cost: storageOverageCost
+            };
+          }
+          if (item.service === 'CDN Bandwidth') {
+            return {
+              ...item,
+              included: `${Math.round((bandwidthLimit / 1000) * 100) / 100} TB`,
+              remaining: `${Math.max(0, Math.round(((bandwidthLimit - currentBandwidthGB) / 1000) * 100) / 100)} TB`,
+              overage: `${Math.round((bandwidthOverageQty / 1000) * 100) / 100} TB`,
+              cost: bandwidthOverageCost
+            };
+          }
+          if (item.service === 'API Requests') {
+            return {
+              ...item,
+              included: `${Math.round((apiLimit / 1000000) * 10) / 10} M`,
+              remaining: `${Math.max(0, Math.round(((apiLimit - currentApiRequests) / 1000000) * 10) / 10)} M`,
+              overage: `${Math.max(0, Math.round((apiOverageQty / 1000000) * 10) / 10)} M`,
+              cost: apiOverageCost
+            };
+          }
+          if (item.service === 'Downloads') {
+            return {
+              ...item,
+              included: `${Math.round(downloadsLimit / 1000)}k`,
+              remaining: `${Math.max(0, Math.round((downloadsLimit - c.usageDetails.downloads.current) / 1000))}k`,
+              overage: `${Math.round(downloadsOverageQty / 1000)}k`,
+              cost: downloadsOverageCost
+            };
+          }
+          return item;
+        });
+
+        // Recalculate quota score
+        const sPct = (c.usageDetails.storage.current / storageLimit) * 100;
+        const dPct = (c.usageDetails.downloads.current / downloadsLimit) * 100;
+        const bPct = (currentBandwidthGB / bandwidthLimit) * 100;
+        const maxUsedPct = Math.max(sPct, dPct, bPct);
+        const quotaScore = Math.max(0, Math.round(100 - maxUsedPct * 0.25));
+
+        // Build updated alerts
+        const updatedAlerts = [];
+        if (storageOverageQty > 0) {
+          updatedAlerts.push({ id: 1, type: 'critical', msg: `Storage usage has exceeded allocated limit by ${Math.round(storageOverageQty)} GB.` });
+        }
+        if (downloadsOverageQty > 0) {
+          updatedAlerts.push({ id: 2, type: 'critical', msg: `Downloads usage has exceeded allocated limit by ${Math.round(downloadsOverageQty)}.` });
+        }
+        if (bandwidthOverageQty > 0) {
+          updatedAlerts.push({ id: 3, type: 'warning', msg: `Bandwidth usage has exceeded allocated limit by ${Math.round(bandwidthOverageQty)} GB.` });
+        }
+        if (updatedAlerts.length === 0) {
+          updatedAlerts.push({ id: 1, type: 'healthy', msg: 'All metrics are performing inside optimal quota boundaries.' });
+        }
+
+        return {
+          ...c,
+          planName: `Store Plan (${storesCount} Stores${(regStorageUpgrade > 0 || regBandwidthUpgrade > 0 || regApiUpgrade > 0 || regDownloadsUpgrade > 0) ? ' + Upgrades' : ''})`,
+          monthlyFee: totalMonthlyFee,
+          overages: totalOverages,
+          quotaScore,
+          stores: storesCount,
+          usageDetails: {
+            storage: updatedStorage,
+            downloads: updatedDownloads,
+            bandwidth: updatedBandwidth,
+            apiRequests: updatedApiRequests
+          },
+          breakdown: updatedBreakdown,
+          alerts: updatedAlerts,
+          azureCost: Math.round(totalMonthlyFee * 0.38 + 15),
+          moduleCostSplit: {
+            dam: Math.round(totalMonthlyFee * 0.35),
+            downloads: Math.round(totalMonthlyFee * 0.40),
+            api: Math.round(totalMonthlyFee * 0.25)
+          },
+          azureCostSplit: {
+            storage: Math.round(totalMonthlyFee * 0.15),
+            cdn: Math.round(totalMonthlyFee * 0.12),
+            api: Math.round(totalMonthlyFee * 0.07),
+            downloads: Math.round(totalMonthlyFee * 0.04)
+          }
+        };
+      }
+      return c;
+    }));
+
+    setUpgradeModalOpen(false);
+    setToastMsg(`Successfully upgraded plan for ${activeCust.name}! New monthly rate: $${totalMonthlyFee}`);
+  };
+
   // Filters & Page Size
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -1153,6 +1332,7 @@ export default function App() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [invoiceMonthFilter, setInvoiceMonthFilter] = useState('all');
   const [chartYearFilter, setChartYearFilter] = useState('2026');
+  const [clientChartYearFilter, setClientChartYearFilter] = useState('thisYear');
   const [invoicePageSize, setInvoicePageSize] = useState(5);
   const [invoiceCurrentPage, setInvoiceCurrentPage] = useState(1);
 
@@ -1356,20 +1536,18 @@ export default function App() {
 
   // Aggregate Infrastructure Cost split for admin donut charts
   const adminAzureSplit = useMemo(() => {
-    let storage = 0, cdn = 0, database = 0, functions = 0, networking = 0;
+    let storage = 0, cdn = 0, api = 0, downloads = 0;
     customers.forEach(c => {
-      storage += c.azureCostSplit.storage;
-      cdn += c.azureCostSplit.cdn;
-      database += c.azureCostSplit.database;
-      functions += c.azureCostSplit.functions;
-      networking += c.azureCostSplit.networking;
+      storage += c.azureCostSplit.storage || 0;
+      cdn += c.azureCostSplit.cdn || 0;
+      api += c.azureCostSplit.api || 0;
+      downloads += c.azureCostSplit.downloads || 0;
     });
     return [
       { name: 'Blob Storage', value: storage },
       { name: 'CDN Bandwidth', value: cdn },
-      { name: 'SQL Database', value: database },
-      { name: 'Azure Functions', value: functions },
-      { name: 'Networking', value: networking }
+      { name: 'API Calls', value: api },
+      { name: 'Downloads', value: downloads }
     ];
   }, [customers]);
 
@@ -1426,7 +1604,7 @@ export default function App() {
       // Let's adjust Acme overages dynamically. Let's make a mock recalculation
       let overageSum = 0;
       const updatedBreakdown = c.breakdown.map(item => {
-        let overageAmt = '0 GB';
+        let overageAmt = '0';
         let cost = 0;
 
         if (item.service === 'Blob Storage') {
@@ -1446,6 +1624,24 @@ export default function App() {
           cost = Math.round(overage * 12.5); // Overage charge rate
           overageSum += cost;
           return { ...item, included: `${limitTb} TB`, overage: overageAmt, cost };
+        }
+        if (item.service === 'API Requests') {
+          const limitM = updatedDetails.apiRequests.limit;
+          const currentM = 12; // Fixed current for Acme in breakdown
+          const overage = Math.max(0, currentM - limitM);
+          overageAmt = `${overage.toFixed(1)} M`;
+          cost = Math.round(overage * 4); // Overage charge rate
+          overageSum += cost;
+          return { ...item, included: `${limitM} M`, overage: overageAmt, cost };
+        }
+        if (item.service === 'Downloads') {
+          const limitK = updatedDetails.downloads.limit / 1000;
+          const currentK = 450; // Fixed current for Acme in breakdown
+          const overage = Math.max(0, currentK - limitK);
+          overageAmt = `${Math.round(overage)}k`;
+          cost = Math.round((overage / 10) * 2); // Overage charge rate
+          overageSum += cost;
+          return { ...item, included: `${Math.round(limitK)}k`, overage: overageAmt, cost };
         }
         overageSum += item.cost;
         return item;
@@ -1532,28 +1728,33 @@ export default function App() {
 
   const getRecommendation = (c) => {
     if (!c) return { nextPlan: null, text: '' };
-    if (c.planName.includes('Custom')) {
+
+    // Suggest upgrading stores or adding add-ons if usage is high
+    const maxUsedPct = Math.max(
+      (c.usageDetails.storage.current / c.usageDetails.storage.limit) * 100,
+      (c.usageDetails.downloads.current / c.usageDetails.downloads.limit) * 100,
+      (c.usageDetails.bandwidth.current / c.usageDetails.bandwidth.limit) * 100
+    );
+
+    if (maxUsedPct >= 90) {
+      const nextStores = c.stores + 10;
+      const fee = nextStores * 30 + (c.monthlyFee - c.stores * 30);
       return {
-        nextPlan: null,
-        text: `Optimize custom egress routing and set alerts for peak bandwidth to control resource costs on the custom plan.`
+        nextPlan: `Store Plan (${nextStores} Stores)`,
+        fee: fee,
+        text: `Tenant is near resource exhaustion (${maxUsedPct.toFixed(0)}% limit reached). Upgrading stores count to ${nextStores} (+10 stores, $${fee}/mo) will scale default quotas and reduce overage risk.`
       };
-    } else if (c.planName.includes('Enterprise')) {
+    } else if (c.overages > 100) {
+      const fee = c.monthlyFee + 50;
       return {
-        nextPlan: 'Enterprise Custom',
-        fee: 2500,
-        text: `Upgrading this customer to Enterprise Custom ($2,500/mo) would provide dedicated premium egress bandwidth and custom SLA support.`
-      };
-    } else if (c.planName.includes('Plus')) {
-      return {
-        nextPlan: 'Business Enterprise Plan',
-        fee: 1200,
-        text: `Upgrading this customer to Business Enterprise Plan ($1,200/mo) would double bandwidth limits and provide 500k monthly downloads.`
+        nextPlan: `${c.planName} + 100GB Bundle`,
+        fee: fee,
+        text: `Tenant has generated high overage charges ($${c.overages}). Applying a resource upgrade package will reduce total monthly cost.`
       };
     } else {
       return {
-        nextPlan: 'Business Plus Plan',
-        fee: 800,
-        text: `Upgrading this customer to Business Plus Plan ($800/mo) would increase storage capacity and eliminate current overage costs.`
+        nextPlan: null,
+        text: `Tenant usage is healthy and well-optimized within current store allocations. No action required.`
       };
     }
   };
@@ -1716,16 +1917,16 @@ export default function App() {
         </div>
 
         <div className="toolbar-right">
-          {activeTab === 'client' && (
+          {activeTab === 'client' ? (
             <>
               <button className="btn btn-outline" onClick={() => setToastMsg('Exporting usage audit reports...')}>
                 <FileSpreadsheet size={14} /> Export Report
               </button>
-              <button className="btn btn-green" onClick={() => setUpgradeModalOpen(true)}>
-                <Sparkles size={14} /> Upgrade Plan
+              <button className="btn btn-green" onClick={openUpgradeModal}>
+                <Sparkles size={14} /> Calculate / Increase Budget
               </button>
             </>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -1835,32 +2036,40 @@ export default function App() {
                       </div>
 
                       <div className="progress-list">
-                        {Object.entries(currentCustomer.usageDetails).map(([key, detail]) => {
-                          const percentage = Math.round((detail.current / detail.limit) * 100);
-                          const colorClass = getProgressColorClass(percentage);
+                        {Object.entries(currentCustomer.usageDetails)
+                          .filter(([key]) => ['storage', 'bandwidth', 'apiRequests', 'downloads'].includes(key))
+                          .map(([key, detail]) => {
+                            const percentage = Math.round((detail.current / detail.limit) * 100);
+                            const colorClass = getProgressColorClass(percentage);
 
-                          return (
-                            <div className="progress-item" key={key}>
-                              <div className="progress-label-row">
-                                <span className="progress-name" style={{ textTransform: 'capitalize' }}>
-                                  {key.replace(/([A-Z])/g, ' $1')}
-                                </span>
-                                <span className="progress-stats">
-                                  {detail.current.toLocaleString()} / {detail.limit.toLocaleString()} {detail.unit}
-                                  <span style={{ marginLeft: '10px' }} className={`progress-percentage text-${colorClass}`}>
-                                    {percentage}% Used
+                            let displayName = '';
+                            if (key === 'storage') displayName = 'Storage';
+                            else if (key === 'bandwidth') displayName = 'CDN Bandwidth';
+                            else if (key === 'apiRequests') displayName = 'API Calls';
+                            else if (key === 'downloads') displayName = 'Downloads';
+
+                            return (
+                              <div className="progress-item" key={key}>
+                                <div className="progress-label-row">
+                                  <span className="progress-name">
+                                    {displayName}
                                   </span>
-                                </span>
+                                  <span className="progress-stats">
+                                    {detail.current.toLocaleString()} / {detail.limit.toLocaleString()} {detail.unit}
+                                    <span style={{ marginLeft: '10px' }} className={`progress-percentage text-${colorClass}`}>
+                                      {percentage}% Used
+                                    </span>
+                                  </span>
+                                </div>
+                                <div className="progress-bar-bg">
+                                  <div
+                                    className={`progress-bar-fill ${colorClass}`}
+                                    style={{ width: `${Math.min(100, percentage)}%` }}
+                                  />
+                                </div>
                               </div>
-                              <div className="progress-bar-bg">
-                                <div
-                                  className={`progress-bar-fill ${colorClass}`}
-                                  style={{ width: `${Math.min(100, percentage)}%` }}
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
                       </div>
                     </div>
 
@@ -1905,11 +2114,8 @@ export default function App() {
                               <td className="bold-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {row.service.includes('Storage') && <Database size={13} className="text-muted" />}
                                 {row.service.includes('Bandwidth') && <Globe size={13} className="text-muted" />}
-                                {row.service.includes('Database') && <Database size={13} className="text-muted" />}
                                 {row.service.includes('API') && <Cpu size={13} className="text-muted" />}
-                                {row.service.includes('Functions') && <Cpu size={13} className="text-muted" />}
-                                {row.service.includes('Networking') && <Globe size={13} className="text-muted" />}
-                                {row.service.includes('Transactions') && <Activity size={13} className="text-muted" />}
+                                {row.service.includes('Downloads') && <Activity size={13} className="text-muted" />}
                                 {row.service}
                               </td>
                               <td>{row.included}</td>
@@ -1930,43 +2136,32 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Side-by-side: Monthly Cost Trend (60%) + Azure Infrastructure Split (40%) */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '6fr 4fr', gap: '24px', marginTop: '24px' }}>
-                    {/* Monthly Cost Trend */}
-                    <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  {/* Monthly Cost Trend (Full Width) */}
+                  <div style={{ display: 'block', marginTop: '24px' }}>
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
                       <div className="section-title-bar">
                         <span className="section-title">
                           <TrendingUp size={16} className="text-blue" /> Monthly Cost Trend (12 Months)
                         </span>
-                        <span className="badge badge-pink">Cost History</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Select Year:</span>
+                          <select
+                            className="toolbar-select"
+                            style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '12px', minWidth: '120px', height: '28px', border: '1px solid #e2e8f0', cursor: 'pointer' }}
+                            value={clientChartYearFilter}
+                            onChange={(e) => setClientChartYearFilter(e.target.value)}
+                          >
+                            <option value="thisYear">This Year (2026)</option>
+                            <option value="prevYear">Previous Year (2025)</option>
+                          </select>
+                        </div>
                       </div>
-                      <div className="chart-container" style={{ height: '200px', marginTop: '10px', flexGrow: 1 }}>
+                      <div className="chart-container" style={{ height: '300px', marginTop: '10px', paddingBottom: '40px' }}>
                         <SvgLineChart
-                          data={currentCustomer.costTrend}
+                          data={clientChartYearFilter === 'thisYear' ? currentCustomer.costTrend : (currentCustomer.costTrendPreviousYear || [])}
                           labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
                           strokeColor="#e91e63"
-                          fullWidth={false}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Azure Infrastructure Split */}
-                    <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                      <div className="section-title-bar">
-                        <span className="section-title">
-                          <Layers size={16} className="text-blue" /> Azure Infrastructure Split
-                        </span>
-                      </div>
-                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
-                        <SvgDonutChart
-                          data={[
-                            { name: 'Blob Storage', value: currentCustomer.azureCostSplit.storage },
-                            { name: 'CDN Bandwidth', value: currentCustomer.azureCostSplit.cdn },
-                            { name: 'SQL Databases', value: currentCustomer.azureCostSplit.database },
-                            { name: 'Functions / Network', value: currentCustomer.azureCostSplit.functions + currentCustomer.azureCostSplit.networking },
-                            { name: 'API Requests & Hooks', value: currentCustomer.moduleCostSplit.api }
-                          ]}
-                          colors={['#e91e63', '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']}
+                          fullWidth={true}
                         />
                       </div>
                     </div>
@@ -2754,77 +2949,331 @@ export default function App() {
         </div>
       )}
 
-      {/* PLAN UPGRADE MODAL */}
+      {/* COMPANY REGISTRATION & COST CALCULATOR MODAL */}
       {upgradeModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(15,23,42,0.6)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1050
-        }}>
-          <div className="card animate-fade-in" style={{ width: '650px', maxWidth: '90%', padding: '24px', position: 'relative' }}>
-            <button
-              style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}
-              onClick={() => setUpgradeModalOpen(false)}
-            >
-              <X size={20} />
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <Sparkles size={20} className="text-pink" />
-              <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Available Plan Upgrades</h3>
-            </div>
-            <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>
-              Upgrade plan tier to scale quotas dynamically and reduce high overage rates.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-              <div className="card" style={{ border: '1px solid #e2e8f0', padding: '16px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase' }}>Current Plan</span>
-                <h4 style={{ fontSize: '16px', fontWeight: 800, margin: '4px 0 8px' }}>{currentCustomer.planName}</h4>
-                <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '12px' }}>${currentCustomer.monthlyFee}<span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>/month</span></div>
-                <ul style={{ fontSize: '12px', color: '#64748b', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>• Storage: {currentCustomer.usageDetails.storage.limit} GB included</li>
-                  <li>• CDN Bandwidth: {currentCustomer.usageDetails.bandwidth.limit} TB included</li>
-                  <li>• Downloads: {currentCustomer.usageDetails.downloads.limit.toLocaleString()} included</li>
-                </ul>
-              </div>
-
-              <div className="card" style={{ border: '2px solid var(--ticket-pink)', padding: '16px', backgroundColor: '#fffdfd' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ticket-pink)', textTransform: 'uppercase' }}>Recommended</span>
-                  <span style={{ fontSize: '9px', fontWeight: 700, backgroundColor: 'var(--ticket-pink-light)', color: 'var(--ticket-pink)', padding: '2px 6px', borderRadius: '10px' }}>SAVE 32% ON OVERAGES</span>
-                </div>
-                <h4 style={{ fontSize: '16px', fontWeight: 800, margin: '4px 0 8px' }}>Business Plus Plan</h4>
-                <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '12px' }}>$1,500<span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>/month</span></div>
-                <ul style={{ fontSize: '12px', color: '#334155', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontWeight: 500 }}>
-                  <li>• <strong>Storage: 1.5 TB</strong> (50% increase)</li>
-                  <li>• <strong>CDN Bandwidth: 7.5 TB</strong> (50% increase)</li>
-                  <li>• <strong>Downloads: 750,000</strong> (50% increase)</li>
-                  <li style={{ color: 'var(--color-healthy)' }}>• Overage charges drop to $0.00</li>
-                </ul>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button className="btn btn-outline" onClick={() => setUpgradeModalOpen(false)}>Cancel</button>
+        <div className="calculator-modal-backdrop" onClick={() => setUpgradeModalOpen(false)}>
+          <form
+            className="calculator-modal-container"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleUpgradePlan}
+          >
+            <div className="calculator-modal-header">
+              <h3>
+                <Sparkles size={20} /> Calculate / Increase Budget
+              </h3>
               <button
-                className="btn btn-pink"
-                onClick={() => {
-                  setToastMsg('Plan upgrade requested successfully! Your sales agent will contact you shortly.');
-                  setUpgradeModalOpen(false);
-                }}
+                type="button"
+                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ffffff' }}
+                onClick={() => setUpgradeModalOpen(false)}
               >
-                Confirm Upgrade Request
+                <X size={20} />
               </button>
             </div>
-          </div>
+
+            <div className="calculator-modal-body">
+              {/* Left Panel: Form Inputs */}
+              <div className="calculator-form-section">
+                <div className="calculator-card-light highlight">
+                  <span style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#e91e63', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Store Configuration
+                  </span>
+                  <div className="slider-container">
+                    <div className="slider-header-row">
+                      <span className="slider-title">Number of Stores ($30 / store / mo)</span>
+                      <span className="slider-upgrade-badge" style={{ backgroundColor: '#fce7f3', color: '#db2777' }}>
+                        Base Cost: ${regStores * 30}/mo
+                      </span>
+                    </div>
+                    <div className="slider-control-row">
+                      <input
+                        type="range"
+                        min="1"
+                        max="200"
+                        step="1"
+                        value={regStores}
+                        onChange={(e) => setRegStores(parseInt(e.target.value))}
+                      />
+                      <input
+                        type="number"
+                        className="toolbar-search"
+                        style={{ width: '80px', padding: '6px 8px', textAlign: 'right' }}
+                        min="1"
+                        max="500"
+                        value={regStores}
+                        onChange={(e) => setRegStores(Math.max(1, parseInt(e.target.value) || 1))}
+                      />
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', width: '45px' }}>Stores</span>
+                    </div>
+                    <div style={{ marginTop: '16px' }}>
+                      <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                        Resource Limits Breakdown (Includes Base + Upgrades)
+                      </span>
+                      <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        fontSize: '12px',
+                        color: '#475569',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        backgroundColor: '#ffffff'
+                      }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                            <th style={{ padding: '8px 10px', fontWeight: 700, color: '#1e293b' }}>Resource</th>
+                            <th style={{ padding: '8px 10px', fontWeight: 700, color: '#1e293b' }}>Per Store</th>
+                            <th style={{ padding: '8px 10px', fontWeight: 700, color: '#1e293b' }}>Default Base ({regStores})</th>
+                            <th style={{ padding: '8px 10px', fontWeight: 700, color: '#1e293b' }}>Upgrades</th>
+                            <th style={{ padding: '8px 10px', fontWeight: 700, color: '#1e293b', textAlign: 'right' }}>Final Limit</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '8px 10px', fontWeight: 600, color: '#0f172a' }}>Storage</td>
+                            <td style={{ padding: '8px 10px' }}>2 GB</td>
+                            <td style={{ padding: '8px 10px' }}>{regStores * 2} GB</td>
+                            <td style={{ padding: '8px 10px', color: regStorageUpgrade > 0 ? '#e91e63' : '#64748b', fontWeight: regStorageUpgrade > 0 ? 600 : 400 }}>
+                              {regStorageUpgrade > 0 ? `+${regStorageUpgrade} GB` : 'None'}
+                            </td>
+                            <td style={{ padding: '8px 10px', fontWeight: 700, color: '#e91e63', textAlign: 'right' }}>
+                              {regStores * 2 + regStorageUpgrade} GB
+                            </td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '8px 10px', fontWeight: 600, color: '#0f172a' }}>CDN Bandwidth</td>
+                            <td style={{ padding: '8px 10px' }}>10 GB</td>
+                            <td style={{ padding: '8px 10px' }}>{regStores * 10} GB</td>
+                            <td style={{ padding: '8px 10px', color: regBandwidthUpgrade > 0 ? '#e91e63' : '#64748b', fontWeight: regBandwidthUpgrade > 0 ? 600 : 400 }}>
+                              {regBandwidthUpgrade > 0 ? `+${regBandwidthUpgrade} GB` : 'None'}
+                            </td>
+                            <td style={{ padding: '8px 10px', fontWeight: 700, color: '#e91e63', textAlign: 'right' }}>
+                              {regStores * 10 + regBandwidthUpgrade} GB
+                            </td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '8px 10px', fontWeight: 600, color: '#0f172a' }}>API Calls</td>
+                            <td style={{ padding: '8px 10px' }}>50k</td>
+                            <td style={{ padding: '8px 10px' }}>{(regStores * 50).toLocaleString()}k</td>
+                            <td style={{ padding: '8px 10px', color: regApiUpgrade > 0 ? '#e91e63' : '#64748b', fontWeight: regApiUpgrade > 0 ? 600 : 400 }}>
+                              {regApiUpgrade > 0 ? `+${(regApiUpgrade / 1000).toFixed(0)}k` : 'None'}
+                            </td>
+                            <td style={{ padding: '8px 10px', fontWeight: 700, color: '#e91e63', textAlign: 'right' }}>
+                              {((regStores * 50000 + regApiUpgrade) / 1000000).toFixed(2)}M
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '8px 10px', fontWeight: 600, color: '#0f172a' }}>Downloads</td>
+                            <td style={{ padding: '8px 10px' }}>5k</td>
+                            <td style={{ padding: '8px 10px' }}>{(regStores * 5).toLocaleString()}k</td>
+                            <td style={{ padding: '8px 10px', color: regDownloadsUpgrade > 0 ? '#e91e63' : '#64748b', fontWeight: regDownloadsUpgrade > 0 ? 600 : 400 }}>
+                              {regDownloadsUpgrade > 0 ? `+${(regDownloadsUpgrade / 1000).toFixed(0)}k` : 'None'}
+                            </td>
+                            <td style={{ padding: '8px 10px', fontWeight: 700, color: '#e91e63', textAlign: 'right' }}>
+                              {((regStores * 5000 + regDownloadsUpgrade) / 1000).toFixed(0)}k
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="calculator-card-light">
+                  <span style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#1e293b', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Resource Upgrades (Optional Add-ons)
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Storage Upgrade */}
+                    <div className="slider-container">
+                      <div className="slider-header-row">
+                        <span className="slider-title">Additional Storage (+ $2 / GB)</span>
+                        {regStorageUpgrade > 0 && (
+                          <span className="slider-upgrade-badge">
+                            + ${regStorageUpgrade * 2}/mo
+                          </span>
+                        )}
+                      </div>
+                      <div className="slider-control-row">
+                        <input
+                          type="range"
+                          min="0"
+                          max="500"
+                          step="5"
+                          value={regStorageUpgrade}
+                          onChange={(e) => setRegStorageUpgrade(parseInt(e.target.value))}
+                        />
+                        <span className="slider-value-display">
+                          + {regStorageUpgrade} GB
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginTop: '4px', padding: '0 4px' }}>
+                        <span>Default Base: <strong style={{ color: '#334155' }}>{regStores * 2} GB</strong> (2 GB / Store)</span>
+                        <span>Total Allocated: <strong style={{ color: '#0f172a' }}>{regStores * 2 + regStorageUpgrade} GB</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Bandwidth Upgrade */}
+                    <div className="slider-container">
+                      <div className="slider-header-row">
+                        <span className="slider-title">Additional CDN Bandwidth (+ $1 / 10 GB)</span>
+                        {regBandwidthUpgrade > 0 && (
+                          <span className="slider-upgrade-badge">
+                            + ${(regBandwidthUpgrade * 0.1).toFixed(1)}/mo
+                          </span>
+                        )}
+                      </div>
+                      <div className="slider-control-row">
+                        <input
+                          type="range"
+                          min="0"
+                          max="1000"
+                          step="10"
+                          value={regBandwidthUpgrade}
+                          onChange={(e) => setRegBandwidthUpgrade(parseInt(e.target.value))}
+                        />
+                        <span className="slider-value-display">
+                          + {regBandwidthUpgrade} GB
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginTop: '4px', padding: '0 4px' }}>
+                        <span>Default Base: <strong style={{ color: '#334155' }}>{regStores * 10} GB</strong> (10 GB / Store)</span>
+                        <span>Total Allocated: <strong style={{ color: '#0f172a' }}>{regStores * 10 + regBandwidthUpgrade} GB</strong></span>
+                      </div>
+                    </div>
+
+                    {/* API Upgrade */}
+                    <div className="slider-container">
+                      <div className="slider-header-row">
+                        <span className="slider-title">Additional API Calls (+ $3 / 100k calls)</span>
+                        {regApiUpgrade > 0 && (
+                          <span className="slider-upgrade-badge">
+                            + ${(regApiUpgrade / 100000 * 3).toFixed(1)}/mo
+                          </span>
+                        )}
+                      </div>
+                      <div className="slider-control-row">
+                        <input
+                          type="range"
+                          min="0"
+                          max="5000000"
+                          step="100000"
+                          value={regApiUpgrade}
+                          onChange={(e) => setRegApiUpgrade(parseInt(e.target.value))}
+                        />
+                        <span className="slider-value-display">
+                          + {(regApiUpgrade / 1000).toFixed(0)}k calls
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginTop: '4px', padding: '0 4px' }}>
+                        <span>Default Base: <strong style={{ color: '#334155' }}>{(regStores * 50).toLocaleString()}k calls</strong> (50k / Store)</span>
+                        <span>Total Allocated: <strong style={{ color: '#0f172a' }}>{((regStores * 50000 + regApiUpgrade) / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}k calls</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Downloads Upgrade */}
+                    <div className="slider-container">
+                      <div className="slider-header-row">
+                        <span className="slider-title">Additional Downloads (+ $2 / 10k downloads)</span>
+                        {regDownloadsUpgrade > 0 && (
+                          <span className="slider-upgrade-badge">
+                            + ${(regDownloadsUpgrade / 10000 * 2).toFixed(1)}/mo
+                          </span>
+                        )}
+                      </div>
+                      <div className="slider-control-row">
+                        <input
+                          type="range"
+                          min="0"
+                          max="500000"
+                          step="10000"
+                          value={regDownloadsUpgrade}
+                          onChange={(e) => setRegDownloadsUpgrade(parseInt(e.target.value))}
+                        />
+                        <span className="slider-value-display">
+                          + {(regDownloadsUpgrade / 1000).toFixed(0)}k dls
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginTop: '4px', padding: '0 4px' }}>
+                        <span>Default Base: <strong style={{ color: '#334155' }}>{(regStores * 5).toLocaleString()}k dls</strong> (5k / Store)</span>
+                        <span>Total Allocated: <strong style={{ color: '#0f172a' }}>{((regStores * 5000 + regDownloadsUpgrade) / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}k dls</strong></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Panel: Pricing & Plan Summary */}
+              <div className="pricing-summary-card">
+                <div>
+                  <div className="summary-header">
+                    <span className="summary-title">
+                      <CreditCard size={18} className="text-pink" /> Cost Structure Summary
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="summary-item-row active">
+                      <span>Stores Base Plan ({regStores} Stores)</span>
+                      <span>${regStores * 30}</span>
+                    </div>
+
+                    <div className="summary-item-row">
+                      <span>Additional Storage (+ {regStorageUpgrade} GB)</span>
+                      <span>+ ${regStorageUpgrade * 2}</span>
+                    </div>
+
+                    <div className="summary-item-row">
+                      <span>Additional CDN (+ {regBandwidthUpgrade} GB)</span>
+                      <span>+ ${(regBandwidthUpgrade * 0.1).toFixed(1)}</span>
+                    </div>
+
+                    <div className="summary-item-row">
+                      <span>Additional APIs (+ {(regApiUpgrade / 1000).toFixed(0)}k)</span>
+                      <span>+ ${(regApiUpgrade / 100000 * 3).toFixed(1)}</span>
+                    </div>
+
+                    <div className="summary-item-row">
+                      <span>Additional Downloads (+ {(regDownloadsUpgrade / 1000).toFixed(0)}k)</span>
+                      <span>+ ${(regDownloadsUpgrade / 10000 * 2).toFixed(1)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="summary-resources-grid">
+                    <div className="summary-resource-box">
+                      <span className="summary-resource-lbl">Total Storage</span>
+                      <span className="summary-resource-val">{(regStores * 2 + regStorageUpgrade)} GB</span>
+                    </div>
+                    <div className="summary-resource-box">
+                      <span className="summary-resource-lbl">Total CDN</span>
+                      <span className="summary-resource-val">{(regStores * 10 + regBandwidthUpgrade)} GB</span>
+                    </div>
+                    <div className="summary-resource-box">
+                      <span className="summary-resource-lbl">Total API Limit</span>
+                      <span className="summary-resource-val">{((regStores * 50000 + regApiUpgrade) / 1000000).toFixed(2)}M</span>
+                    </div>
+                    <div className="summary-resource-box">
+                      <span className="summary-resource-lbl">Total Downloads</span>
+                      <span className="summary-resource-val">{((regStores * 5000 + regDownloadsUpgrade) / 1000).toFixed(0)}k</span>
+                    </div>
+                  </div>
+
+                  <div className="summary-item-row total">
+                    <span>Total Monthly Fee</span>
+                    <span className="summary-total-price">${Math.round(regStores * 30 + regStorageUpgrade * 2 + regBandwidthUpgrade * 0.1 + regApiUpgrade / 100000 * 3 + regDownloadsUpgrade / 10000 * 2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="calculator-modal-footer">
+              <button type="button" className="btn btn-outline" onClick={() => setUpgradeModalOpen(false)}>Cancel</button>
+              <button type="submit" className="btn btn-pink">
+                Upgrade Plan
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
