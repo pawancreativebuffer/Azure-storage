@@ -758,15 +758,14 @@ function SvgSavingsChart({ currentPlanCost, upgradePlanCost, months = 6, height 
   );
 }
 
-function SvgProfitMarginChart({ data, height = 240 }) {
+function SvgOverageRevenueChart({ data, height = 240 }) {
   if (!data || data.length === 0) return null;
 
-  const margins = data.map(d => d.margin);
-  const maxMargin = Math.max(...margins, 10);
-  const minMargin = Math.min(...margins, -10);
+  const values = data.map(d => d.value);
+  const maxValue = Math.max(...values, 100);
 
   const paddingLeft = 160;
-  const paddingRight = 45;
+  const paddingRight = 65;
   const paddingTop = 15;
   const paddingBottom = 15;
 
@@ -774,30 +773,22 @@ function SvgProfitMarginChart({ data, height = 240 }) {
   const chartHeight = height - paddingTop - paddingBottom;
   const plotWidth = chartWidth - paddingLeft - paddingRight;
 
-  const range = maxMargin - minMargin;
-  const zeroRatio = minMargin < 0 ? (-minMargin / range) : 0;
-  const zeroX = paddingLeft + zeroRatio * plotWidth;
-
   const rowHeight = chartHeight / data.length;
 
   return (
     <svg viewBox={`0 0 ${chartWidth} ${height}`} className="svg-chart" style={{ overflow: 'visible', width: '100%' }}>
-      <line x1={zeroX} y1={paddingTop} x2={zeroX} y2={height - paddingBottom} stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" />
-
       {data.map((item, index) => {
         const y = paddingTop + index * rowHeight;
         const barHeight = Math.min(18, rowHeight * 0.6);
         const barY = y + (rowHeight - barHeight) / 2;
 
-        const barWidth = (Math.abs(item.margin) / range) * plotWidth;
-
-        const isNegative = item.margin < 0;
-        const barX = isNegative ? (zeroX - barWidth) : zeroX;
-        const barColor = isNegative ? '#f43f5e' : '#10b981';
+        const barWidth = maxValue > 0 ? (item.value / maxValue) * plotWidth : 0;
+        const barX = paddingLeft;
+        const barColor = '#db2777'; // Pink for overages
 
         return (
           <g key={index}>
-            <text x={paddingLeft - 15} y={y + rowHeight / 2 + 5} textAnchor="end" style={{ fill: '#334155', fontSize: '14px', fontWeight: 700 }}>
+            <text x={paddingLeft - 15} y={y + rowHeight / 2 + 4} textAnchor="end" style={{ fill: '#334155', fontSize: '10px', fontWeight: 700 }}>
               {item.name}
             </text>
 
@@ -805,12 +796,12 @@ function SvgProfitMarginChart({ data, height = 240 }) {
             <rect x={barX} y={barY} width={barWidth} height={barHeight} rx={barHeight / 2} fill={barColor} />
 
             <text
-              x={isNegative ? (zeroX + 8) : (barX + barWidth + 8)}
-              y={y + rowHeight / 2 + 5}
+              x={barX + barWidth + 8}
+              y={y + rowHeight / 2 + 4}
               textAnchor="start"
-              style={{ fill: barColor, fontSize: '14px', fontWeight: 800 }}
+              style={{ fill: barColor, fontSize: '10px', fontWeight: 800 }}
             >
-              {item.margin.toFixed(1)}%
+              ${item.value.toLocaleString()}
             </text>
           </g>
         );
@@ -985,14 +976,13 @@ function SvgDualBarChart({ line1, line2, labels, line1Label, line2Label, line1Co
   );
 }
 
-function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
-  const total = healthy + warning + critical + loss;
+function SvgGaugeChart({ healthy, warning, critical, height = 185 }) {
+  const total = healthy + warning + critical;
   if (total === 0) return null;
 
   const healthyPct = healthy / total;
   const warningPct = warning / total;
   const criticalPct = critical / total;
-  const lossPct = loss / total;
 
   const r = 65;
   const circ = Math.PI * r; // ~204.2
@@ -1002,7 +992,6 @@ function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
   const healthyLen = healthyPct * circ;
   const warningLen = warningPct * circ;
   const criticalLen = criticalPct * circ;
-  const lossLen = lossPct * circ;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
@@ -1035,15 +1024,6 @@ function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
             strokeWidth={strokeWidth}
             strokeDasharray={`${criticalLen} 300`}
             strokeDashoffset={`-${healthyLen + warningLen}`}
-            strokeLinecap={criticalLen > 0 ? "round" : "butt"}
-          />
-          <path
-            d="M 10 75 A 65 65 0 0 1 140 75"
-            fill="none"
-            stroke="#be123c"
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${lossLen} 300`}
-            strokeDashoffset={`-${healthyLen + warningLen + criticalLen}`}
             strokeLinecap="round"
           />
         </svg>
@@ -1053,37 +1033,29 @@ function SvgGaugeChart({ healthy, warning, critical, loss, height = 185 }) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', marginTop: '16px', width: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', gap: '10px', marginTop: '16px', width: '100%', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Healthy</span>
+            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Healthy</span>
           </div>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{healthy}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>{healthy}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Warning</span>
+            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Warning</span>
           </div>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{warning}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>{warning}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f43f5e' }} />
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Critical</span>
+            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f43f5e' }} />
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Critical</span>
           </div>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{critical}</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '2px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#be123c' }} />
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Loss-Making</span>
-          </div>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{loss}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>{critical}</span>
         </div>
       </div>
     </div>
@@ -1102,13 +1074,8 @@ export default function App() {
       const maxUsedPct = Math.max(storageUsedPct, downloadsUsedPct, bandwidthUsedPct);
       const usagePercent = Math.round((storageUsedPct + downloadsUsedPct + bandwidthUsedPct) / 3);
 
-      const profit = (c.monthlyFee + c.overages) - c.azureCost;
-      const margin = (profit / (c.monthlyFee + c.overages)) * 100;
-
       let status = 'healthy';
-      if (margin < 0) {
-        status = 'loss';
-      } else if (maxUsedPct >= 90) {
+      if (maxUsedPct >= 90) {
         status = 'critical';
       } else if (maxUsedPct >= 80) {
         status = 'warning';
@@ -1480,28 +1447,34 @@ export default function App() {
   const adminKPIs = useMemo(() => {
     const totalCustomers = customers.length;
     let totalRevenue = 0; // Subscription Fees + Overage charges
-    let totalAzureCost = 0; // Internal infra cost
     let totalOverageRev = 0;
+    let totalStores = 0;
 
     customers.forEach(c => {
       totalRevenue += (c.monthlyFee + c.overages);
-      totalAzureCost += c.azureCost;
       totalOverageRev += c.overages;
+      totalStores += c.stores;
     });
-
-    const grossProfit = totalRevenue - totalAzureCost;
-    const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
-    const activeOrgs = customers.length; // all mock are active
 
     return {
       totalCustomers,
       monthlyRevenue: totalRevenue,
-      azureCost: totalAzureCost,
-      grossProfit,
-      profitMargin,
       overageRevenue: totalOverageRev,
-      activeOrgs
+      totalStores
     };
+  }, [customers]);
+
+  // Aggregate Billing Revenue Trend across all tenants (12 Months)
+  const aggregateRevenueTrend = useMemo(() => {
+    const trend = Array(12).fill(0);
+    customers.forEach(c => {
+      if (c.costTrend && c.costTrend.length === 12) {
+        c.costTrend.forEach((val, i) => {
+          trend[i] += val;
+        });
+      }
+    });
+    return trend;
   }, [customers]);
 
   // Sorted & Filtered customers for Admin Table
@@ -1573,14 +1546,13 @@ export default function App() {
   }, [customers]);
 
   const statusCounts = useMemo(() => {
-    let healthy = 0, warning = 0, critical = 0, loss = 0;
+    let healthy = 0, warning = 0, critical = 0;
     customers.forEach(c => {
       if (c.status === 'healthy') healthy++;
       else if (c.status === 'warning') warning++;
       else if (c.status === 'critical') critical++;
-      else if (c.status === 'loss') loss++;
     });
-    return { healthy, warning, critical, loss };
+    return { healthy, warning, critical };
   }, [customers]);
 
   // Edit/Modify Quotas inside Drawer
@@ -1647,14 +1619,9 @@ export default function App() {
         return item;
       });
 
-      // Update status based on profitability and quota exhaustion
+      // Update status based on quota exhaustion
       let newStatus = 'healthy';
-      const profit = (c.monthlyFee + overageSum) - c.azureCost;
-      const margin = ((profit) / (c.monthlyFee + overageSum)) * 100;
-
-      if (margin < 0) {
-        newStatus = 'loss';
-      } else if (maxUsedPct >= 90) {
+      if (maxUsedPct >= 90) {
         newStatus = 'critical';
       } else if (maxUsedPct >= 80) {
         newStatus = 'warning';
@@ -1802,7 +1769,7 @@ export default function App() {
               className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
               onClick={() => setActiveTab('admin')}
             >
-              Admin Cost Management
+              Admin Billing Management
             </li>
           </ul>
         </div>
@@ -1908,7 +1875,6 @@ export default function App() {
                   <option value="healthy">Healthy</option>
                   <option value="warning">Warning</option>
                   <option value="critical">Critical</option>
-                  <option value="loss">Loss Making</option>
                 </select>
                 <ChevronDown size={14} className="select-arrow" />
               </div>
@@ -1949,20 +1915,20 @@ export default function App() {
             </>
           ) : (
             <>
-              <div className="sidebar-menu-title">Admin Cost Portal</div>
+              <div className="sidebar-menu-title">Admin Control Panel</div>
               <button
                 className={`sidebar-item ${adminActiveSection === 'profitability' ? 'active' : ''}`}
                 onClick={() => setAdminActiveSection('profitability')}
               >
                 <DollarSign size={15} />
-                <span>Profitability Overview</span>
+                <span>Billing Overview</span>
               </button>
               <button
                 className={`sidebar-item ${adminActiveSection === 'invoices' ? 'active' : ''}`}
                 onClick={() => setAdminActiveSection('invoices')}
               >
                 <FileSpreadsheet size={15} />
-                <span>Azure Invoices</span>
+                <span>Client Invoices</span>
               </button>
             </>
           )}
@@ -2180,8 +2146,8 @@ export default function App() {
                 <div>
                   <div className="dashboard-header-row">
                     <div>
-                      <h1 className="page-title">Admin Profitability Overview</h1>
-                      <p className="page-subtitle">Monitor customer profitability margins and optimize Azure resource deployment costs.</p>
+                      <h1 className="page-title">Admin Billing Overview</h1>
+                      <p className="page-subtitle">Monitor customer subscription levels, resource usage quotas, and monthly billing stats.</p>
                     </div>
                   </div>
 
@@ -2194,7 +2160,7 @@ export default function App() {
                       </div>
                       <span className="kpi-value">{adminKPIs.totalCustomers}</span>
                       <div className="kpi-footer">
-                        <span className="text-green font-medium">+1 new organization</span>
+                        <span className="text-muted">Active organizations</span>
                       </div>
                     </div>
 
@@ -2205,47 +2171,43 @@ export default function App() {
                       </div>
                       <span className="kpi-value">${adminKPIs.monthlyRevenue.toLocaleString()}</span>
                       <div className="kpi-footer">
-                        <span className="text-muted">Subscription fees + overages</span>
+                        <span className="text-muted">Fees + overages</span>
                       </div>
                     </div>
 
                     <div className="card kpi-card green">
                       <div className="kpi-header">
-                        <span>Monthly Profit</span>
+                        <span>Total Overage Revenue</span>
                         <TrendingUp size={14} className="kpi-icon" />
                       </div>
                       <span className="kpi-value text-green">
-                        {adminKPIs.grossProfit > 0 ? `+$${adminKPIs.grossProfit.toLocaleString()}` : '$0'}
+                        ${adminKPIs.overageRevenue.toLocaleString()}
                       </span>
                       <div className="kpi-footer">
-                        <span className="text-green font-medium">
-                          {adminKPIs.grossProfit > 0 ? `Margin: +${adminKPIs.profitMargin.toFixed(1)}%` : 'No profit this month'}
-                        </span>
+                        <span className="text-green font-medium">From quota overages</span>
                       </div>
                     </div>
 
                     <div className="card kpi-card coral">
                       <div className="kpi-header">
-                        <span>Monthly Loss</span>
-                        <AlertTriangle size={14} className="kpi-icon" />
+                        <span>Total Managed Stores</span>
+                        <Home size={14} className="kpi-icon" />
                       </div>
                       <span className="kpi-value text-pink">
-                        {adminKPIs.grossProfit < 0 ? `-$${Math.abs(adminKPIs.grossProfit).toLocaleString()}` : '$0'}
+                        {adminKPIs.totalStores.toLocaleString()}
                       </span>
                       <div className="kpi-footer">
-                        <span className={`font-medium ${adminKPIs.grossProfit < 0 ? 'text-pink' : 'text-muted'}`}>
-                          {adminKPIs.grossProfit < 0 ? `Loss Margin: ${adminKPIs.profitMargin.toFixed(1)}%` : 'No loss this month'}
-                        </span>
+                        <span className="text-muted">Across all accounts</span>
                       </div>
                     </div>
                   </div>
 
 
-                  {/* Customer Profitability Analysis Table */}
+                  {/* Customer Billing & Subscription Overview Table */}
                   <div className="card" style={{ marginBottom: '24px' }}>
                     <div className="section-title-bar">
-                      <span className="section-title"><User size={16} className="text-blue" /> Customer Profitability Analysis</span>
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>Click on any customer row to open details drawer and adjust quotas</span>
+                      <span className="section-title"><User size={16} className="text-blue" /> Customer Billing & Subscription Overview</span>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>Click on any customer row to open details drawer and inspect quotas</span>
                     </div>
                     <div className="table-responsive">
                       <table className="ticket-table">
@@ -2253,29 +2215,26 @@ export default function App() {
                           <tr>
                             <th>Customer Organization Name</th>
                             <th>Plan Type</th>
-                            <th>Monthly Fee</th>
-                            <th>Azure Cost</th>
-                            <th>Profit margin</th>
+                            <th>Active Stores</th>
+                            <th>Monthly Base Fee</th>
+                            <th>Overage Charges</th>
+                            <th>Total Billing</th>
                             <th>Usage Avg</th>
-                            <th>Overage charges</th>
-                            <th>Profitability Status</th>
+                            <th>Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {paginatedCustomers.map((c) => {
                             const totalRev = c.monthlyFee + c.overages;
-                            const profit = totalRev - c.azureCost;
-                            const margin = totalRev > 0 ? (profit / totalRev) * 100 : 0;
 
                             return (
                               <tr key={c.id} onClick={() => setDrawerCustomerId(c.id)} style={{ cursor: 'pointer' }}>
                                 <td className="bold-value">{c.name}</td>
                                 <td>{c.planName}</td>
+                                <td className="bold-value">{c.stores}</td>
                                 <td className="bold-value">${c.monthlyFee}</td>
-                                <td>${c.azureCost}</td>
-                                <td className={`bold-value ${margin < 0 ? 'text-critical' : 'text-healthy'}`}>
-                                  {margin.toFixed(1)}%
-                                </td>
+                                <td className="bold-value text-pink">${c.overages}</td>
+                                <td className="bold-value text-blue">${totalRev}</td>
                                 <td>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <span>{c.usagePercent}%</span>
@@ -2287,7 +2246,6 @@ export default function App() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="bold-value text-pink">${c.overages}</td>
                                 <td>{getStatusBadge(c.status)}</td>
                               </tr>
                             );
@@ -2415,25 +2373,25 @@ export default function App() {
                         <div className="alert-card critical">
                           <AlertTriangle size={16} className="alert-icon" />
                           <div>
-                            <strong>Loss Making Organization:</strong> Acme Marketing Corp ($1,750 cost vs $1,452 revenue).
+                            <strong>High Overage Charge Alert:</strong> Starlight Entertainment generated $7,731 in overage fees.
                           </div>
                         </div>
                         <div className="alert-card critical">
                           <AlertTriangle size={16} className="alert-icon" />
                           <div>
-                            <strong>Bandwidth abuse alert:</strong> Starlight Entertainment triggered 3.4 TB overage bandwidth request.
+                            <strong>Bandwidth abuse alert:</strong> Starlight Entertainment triggered 13.5 TB overage bandwidth request.
                           </div>
                         </div>
                         <div className="alert-card warning">
                           <AlertTriangle size={16} className="alert-icon" />
                           <div>
-                            <strong>Rapid Growth Warning:</strong> Summit Health Group has exceeded 96% storage limit.
+                            <strong>Rapid Growth Warning:</strong> Summit Health Group has exceeded limit (440 GB storage overage).
                           </div>
                         </div>
                         <div className="alert-card warning">
                           <AlertTriangle size={16} className="alert-icon" />
                           <div>
-                            <strong>High Risk of Quota Exhaustion:</strong> Nova Creative Agency has 4 days remaining.
+                            <strong>High Risk of Quota Exhaustion:</strong> Nova Creative Agency has exceeded base plan limits across all services.
                           </div>
                         </div>
                       </div>
@@ -2448,44 +2406,38 @@ export default function App() {
                           healthy={statusCounts.healthy}
                           warning={statusCounts.warning}
                           critical={statusCounts.critical}
-                          loss={statusCounts.loss}
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* Highlights Profitability Charts */}
+                  {/* Highlights billing charts */}
                   <div className="dashboard-grid-1-1">
                     <div className="card">
                       <div className="section-title-bar">
-                        <span className="section-title"><TrendingUp size={15} className="text-green" /> Margin Analysis by Organization</span>
-                        <span className="badge badge-green">Profitability Leaderboard</span>
+                        <span className="section-title"><TrendingUp size={15} className="text-green" /> Overage Revenue by Organization</span>
+                        <span className="badge badge-green">Billing Leaders</span>
                       </div>
                       <div className="chart-container" style={{ height: '260px', marginTop: '10px' }}>
-                        <SvgProfitMarginChart
-                          data={customers.map(c => {
-                            const totalRev = c.monthlyFee + c.overages;
-                            const profit = totalRev - c.azureCost;
-                            const margin = totalRev > 0 ? (profit / totalRev) * 100 : 0;
-                            return {
-                              name: c.name.split(' ')[0], // short name
-                              margin: margin
-                            };
-                          }).sort((a, b) => b.margin - a.margin)}
+                        <SvgOverageRevenueChart
+                          data={customers.map(c => ({
+                            name: c.name.split(' ')[0], // short name
+                            value: c.overages
+                          })).sort((a, b) => b.value - a.value)}
                         />
                       </div>
                     </div>
 
                     <div className="card">
                       <div className="section-title-bar">
-                        <span className="section-title"><Cpu size={15} className="text-pink" /> Aggregate Cost Over Time</span>
-                        <span className="badge badge-pink">12M cloud growth</span>
+                        <span className="section-title"><Cpu size={15} className="text-pink" /> Aggregate Monthly Billing Revenue</span>
+                        <span className="badge badge-pink">12M billing growth</span>
                       </div>
                       <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
                         <SvgLineChart
-                          data={[4500, 4800, 4900, 5200, 5600, 6000, 6200, 6500, 6800, 7100, 7400, adminKPIs.azureCost]}
+                          data={aggregateRevenueTrend}
                           labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                          strokeColor="#e91e63"
+                          strokeColor="#db2777"
                         />
                       </div>
                     </div>
@@ -2493,13 +2445,12 @@ export default function App() {
                 </div>
               )}
 
-              {/* Section 2: Azure Infrastructure Invoices */}
               {adminActiveSection === 'invoices' && (
                 <div>
                   <div className="dashboard-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <h1 className="page-title">Azure Infrastructure Invoices</h1>
-                      <p className="page-subtitle">Track and audit Microsoft Azure direct subscription costs against client collected revenue.</p>
+                      <h1 className="page-title">Client Billing Invoices</h1>
+                      <p className="page-subtitle">Track, audit, and manage client invoices generated based on resource subscriptions and overages.</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Filter:</span>
@@ -2512,7 +2463,6 @@ export default function App() {
                           if (!e.target.value) {
                             setInvoiceMonthFilter('all');
                           } else {
-                            // Convert 2026-06 to "June 2026"
                             const [y, m] = e.target.value.split('-');
                             const monthName = new Date(y, parseInt(m) - 1).toLocaleString('en-US', { month: 'long' });
                             setInvoiceMonthFilter(`${monthName} ${y}`);
@@ -2530,42 +2480,62 @@ export default function App() {
                       )}
                       <div style={{ borderLeft: '1px solid #e2e8f0', height: '20px', margin: '0 4px' }}></div>
                       <label className="btn btn-navy" style={{ cursor: 'pointer', display: 'inline-flex', margin: 0 }}>
-                        <Plus size={14} /> Upload Azure Invoice
+                        <Plus size={14} /> Upload Client Invoice
                         <input
                           type="file"
                           accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.txt"
                           style={{ display: 'none' }}
-                          onChange={handleUploadAzureInvoice}
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+
+                            const nextId = `INV-2026-${Math.floor(Math.random() * 90 + 10)}`;
+                            const today = new Date();
+                            const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+                            const monthStr = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + ' (Uploaded)';
+                            const fileUrl = URL.createObjectURL(file);
+
+                            const newInv = {
+                              id: nextId,
+                              month: monthStr,
+                              date: dateStr,
+                              azureCost: Math.round(adminKPIs.monthlyRevenue * 0.35),
+                              clientRevenue: adminKPIs.monthlyRevenue,
+                              status: 'Paid',
+                              fileName: file.name,
+                              fileUrl: fileUrl
+                            };
+
+                            setAdminAzureInvoices(prev => [newInv, ...prev]);
+                            setInvoiceCurrentPage(1);
+                            setToastMsg(`Uploaded Invoice: ${file.name}`);
+                          }}
                         />
                       </label>
                     </div>
                   </div>
 
-                  {/* KPI Cards (small, 4-col grid like profitability) */}
+                  {/* KPI Cards */}
                   <div className="kpi-grid">
                     <div className="card kpi-card">
                       <div className="kpi-header">
-                        <span>This Month Azure Billing</span>
-                        <Database size={14} className="kpi-icon" />
+                        <span>This Month Total Billings</span>
+                        <DollarSign size={14} className="kpi-icon" />
                       </div>
-                      <span className="kpi-value">${(adminAzureInvoices.length > 0 ? adminAzureInvoices[0].azureCost : 0).toLocaleString()}</span>
+                      <span className="kpi-value">${adminKPIs.monthlyRevenue.toLocaleString()}</span>
                       <div className="kpi-footer">
-                        <span className="text-pink font-medium">{adminAzureInvoices.length > 0 ? adminAzureInvoices[0].month : 'N/A'}</span>
+                        <span className="text-green font-medium">All active customer tiers</span>
                       </div>
                     </div>
 
-                    <div className="card kpi-card green">
+                    <div className="card kpi-card pink">
                       <div className="kpi-header">
-                        <span>Monthly Subscriptions</span>
-                        <DollarSign size={14} className="kpi-icon" />
+                        <span>Monthly Overage Revenue</span>
+                        <TrendingUp size={14} className="kpi-icon" />
                       </div>
-                      <span className="kpi-value">${(adminAzureInvoices.length > 0 ? adminAzureInvoices[0].clientRevenue : 0).toLocaleString()}</span>
+                      <span className="kpi-value">${adminKPIs.overageRevenue.toLocaleString()}</span>
                       <div className="kpi-footer">
-                        <span className="text-green font-medium">
-                          {adminAzureInvoices.length > 0
-                            ? `Net: $${(adminAzureInvoices[0].clientRevenue - adminAzureInvoices[0].azureCost).toLocaleString()}`
-                            : 'N/A'}
-                        </span>
+                        <span className="text-pink font-medium">From active resources</span>
                       </div>
                     </div>
                   </div>
@@ -2575,7 +2545,7 @@ export default function App() {
                   {/* Full-width Invoice Audit Log Table */}
                   <div className="card" style={{ marginBottom: '24px' }}>
                     <div className="section-title-bar">
-                      <span className="section-title"><Layers size={16} className="text-blue" /> Azure Invoice Audit Log</span>
+                      <span className="section-title"><Layers size={16} className="text-blue" /> Client Invoice History & Audit Log</span>
                       {invoiceMonthFilter !== 'all' && (
                         <span className="badge badge-blue">{invoiceMonthFilter}</span>
                       )}
@@ -2586,30 +2556,26 @@ export default function App() {
                           <tr>
                             <th>Invoice ID</th>
                             <th>Billing Period</th>
-                            <th>Date Received</th>
-                            <th>Azure Direct Cost</th>
-                            <th>Client Total Revenue</th>
-                            <th>Audited Margin</th>
+                            <th>Date Issued</th>
+                            <th>Base Plan Fees</th>
+                            <th>Overage Charges</th>
+                            <th>Total Collected Billings</th>
                             <th>Status</th>
                             <th className="text-right">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                           {paginatedInvoices.map((inv) => {
-                            const profit = inv.clientRevenue - inv.azureCost;
-                            const margin = inv.clientRevenue > 0 ? (profit / inv.clientRevenue * 100).toFixed(1) : 0;
+                            const overageAmt = Math.round(inv.azureCost * 0.35);
+                            const basePlanAmt = inv.clientRevenue - overageAmt;
                             return (
                               <tr key={inv.id} style={{ cursor: 'default' }}>
-                                <td className="bold-value">{inv.id}</td>
+                                <td className="bold-value">{inv.id.replace('AZ-INV', 'INV')}</td>
                                 <td>{inv.month}</td>
                                 <td>{inv.date}</td>
-                                <td className="bold-value text-pink">${inv.azureCost.toLocaleString()}</td>
+                                <td className="bold-value text-blue">${basePlanAmt.toLocaleString()}</td>
+                                <td className="bold-value text-pink">${overageAmt.toLocaleString()}</td>
                                 <td className="bold-value text-green">${inv.clientRevenue.toLocaleString()}</td>
-                                <td>
-                                  <span className={`status-badge ${parseFloat(margin) > 0 ? 'healthy' : 'loss'}`}>
-                                    {parseFloat(margin) > 0 ? `+${margin}%` : `${margin}%`}
-                                  </span>
-                                </td>
                                 <td>
                                   <span className="status-badge healthy">
                                     {inv.status}
@@ -2619,7 +2585,23 @@ export default function App() {
                                   <button
                                     className="btn btn-outline"
                                     style={{ padding: '4px 8px', fontSize: '11px' }}
-                                    onClick={() => handleDownloadAzureInvoice(inv)}
+                                    onClick={() => {
+                                      const element = document.createElement("a");
+                                      let file;
+                                      if (inv.fileUrl) {
+                                        element.href = inv.fileUrl;
+                                      } else {
+                                        file = new Blob([
+                                          `CLIENT SUBSCRIPTION INVOICE\n==========================\nInvoice ID: ${inv.id.replace('AZ-INV', 'INV')}\nPeriod: ${inv.month}\nDate Issued: ${inv.date}\nBase Plan Fees: $${basePlanAmt.toLocaleString()}\nOverage Charges: $${overageAmt.toLocaleString()}\nTotal Collected Billings: $${inv.clientRevenue.toLocaleString()}\nStatus: ${inv.status}\n\nThis is a verified client subscription invoice report.`
+                                        ], { type: 'text/plain' });
+                                        element.href = URL.createObjectURL(file);
+                                      }
+                                      element.download = inv.fileName || `${inv.id.replace('AZ-INV', 'INV')}.txt`;
+                                      document.body.appendChild(element);
+                                      element.click();
+                                      document.body.removeChild(element);
+                                      setToastMsg(`Downloaded invoice: ${inv.fileName || inv.id.replace('AZ-INV', 'INV')}`);
+                                    }}
                                   >
                                     <Download size={12} /> Download
                                   </button>
@@ -2678,12 +2660,12 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Full-width Monthly Azure Cost vs Revenue Chart */}
+                  {/* Full-width Stacked/Dual Billing Revenue Chart */}
                   <div className="card">
                     <div className="section-title-bar">
                       <span className="section-title">
                         <TrendingUp size={16} className="text-blue" />
-                        Monthly Azure Cost vs Revenue
+                        Monthly Billing Revenue Breakdown
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748b' }}>Select Year:</span>
@@ -2702,13 +2684,17 @@ export default function App() {
                     <div style={{ marginTop: '10px' }}>
                       {chartData.labels.length > 0 ? (
                         <SvgDualBarChart
-                          line1={chartData.line1}
-                          line2={chartData.line2}
+                          line1={chartData.line2.map((total, idx) => {
+                            const spend = chartData.line1[idx];
+                            const overage = Math.round(spend * 0.35);
+                            return total - overage;
+                          })}
+                          line2={chartData.line1.map(spend => Math.round(spend * 0.35))}
                           labels={chartData.labels}
-                          line1Label="Direct Azure Spend"
-                          line2Label="Collected Billings"
-                          line1Color="#8b5cf6"
-                          line2Color="#e91e63"
+                          line1Label="Base Plan Revenue"
+                          line2Label="Overage Revenue"
+                          line1Color="#3b82f6"
+                          line2Color="#db2777"
                           height={220}
                           fontSize={8}
                         />
@@ -2742,194 +2728,60 @@ export default function App() {
 
             <div className="drawer-body">
 
-              {/* Profitability Panel */}
+              {/* Billing Summary Panel */}
               <div className="drawer-section">
-                <span className="drawer-section-title">Financial Analysis</span>
+                <span className="drawer-section-title">Billing Summary</span>
                 <div className="drawer-info-grid">
                   <div className="drawer-info-item">
-                    <span className="drawer-info-label">Current Revenue</span>
-                    <span className="drawer-info-value">${drawerCustomer.monthlyFee + drawerCustomer.overages}</span>
+                    <span className="drawer-info-label">Base Plan Fee</span>
+                    <span className="drawer-info-value">${drawerCustomer.monthlyFee}</span>
                   </div>
                   <div className="drawer-info-item">
-                    <span className="drawer-info-label">Azure Infra Cost</span>
-                    <span className="drawer-info-value text-coral">${drawerCustomer.azureCost}</span>
-                  </div>
-                  <div className="drawer-info-item">
-                    <span className="drawer-info-label">Overage Revenue</span>
+                    <span className="drawer-info-label">Overage Charges</span>
                     <span className="drawer-info-value text-pink">${drawerCustomer.overages}</span>
                   </div>
                   <div className="drawer-info-item">
-                    <span className="drawer-info-label">Profit margin</span>
-                    <span className={`drawer-info-value ${((drawerCustomer.monthlyFee + drawerCustomer.overages - drawerCustomer.azureCost) < 0) ? 'text-critical' : 'text-green'}`}>
-                      {(((drawerCustomer.monthlyFee + drawerCustomer.overages - drawerCustomer.azureCost) / (drawerCustomer.monthlyFee + drawerCustomer.overages)) * 100).toFixed(1)}%
+                    <span className="drawer-info-label">Total Billing</span>
+                    <span className="drawer-info-value text-blue">${drawerCustomer.monthlyFee + drawerCustomer.overages}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resource Quotas & Usage details */}
+              <div className="drawer-section">
+                <span className="drawer-section-title">Quota Allocation & Current Usage</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>Blob Storage</span>
+                    <span style={{ color: '#1e293b', fontWeight: 700 }}>
+                      {drawerCustomer.usageDetails.storage.current} GB / {drawerCustomer.usageDetails.storage.limit} GB
                     </span>
                   </div>
-                </div>
-              </div>
 
-              {/* Editable limits form */}
-              <div className="drawer-section">
-                <span className="drawer-section-title">Modify Quota Allowances</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
-                  {/* Storage Slider/Input */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                      Storage Capacity Limit (Current Used: {drawerCustomer.usageDetails.storage.current} GB)
-                    </label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input
-                        type="range"
-                        min="200"
-                        max="4000"
-                        step="50"
-                        value={drawerCustomer.usageDetails.storage.limit}
-                        onChange={(e) => handleUpdateQuota('storage', e.target.value)}
-                        style={{ flex: 1 }}
-                      />
-                      <input
-                        type="number"
-                        className="toolbar-search"
-                        style={{ width: '100px', padding: '6px 8px' }}
-                        value={drawerCustomer.usageDetails.storage.limit}
-                        onChange={(e) => handleUpdateQuota('storage', e.target.value)}
-                      />
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>GB</span>
-                    </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>CDN Bandwidth</span>
+                    <span style={{ color: '#1e293b', fontWeight: 700 }}>
+                      {drawerCustomer.usageDetails.bandwidth.current} TB / {drawerCustomer.usageDetails.bandwidth.limit} TB
+                    </span>
                   </div>
 
-                  {/* Bandwidth Slider/Input */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                      CDN Bandwidth Limit (Current Used: {drawerCustomer.usageDetails.bandwidth.current} TB)
-                    </label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input
-                        type="range"
-                        min="1"
-                        max="30"
-                        step="0.5"
-                        value={drawerCustomer.usageDetails.bandwidth.limit}
-                        onChange={(e) => handleUpdateQuota('bandwidth', e.target.value)}
-                        style={{ flex: 1 }}
-                      />
-                      <input
-                        type="number"
-                        className="toolbar-search"
-                        style={{ width: '100px', padding: '6px 8px' }}
-                        value={drawerCustomer.usageDetails.bandwidth.limit}
-                        onChange={(e) => handleUpdateQuota('bandwidth', e.target.value)}
-                      />
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>TB</span>
-                    </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>API Requests</span>
+                    <span style={{ color: '#1e293b', fontWeight: 700 }}>
+                      {drawerCustomer.usageDetails.apiRequests.current} M / {drawerCustomer.usageDetails.apiRequests.limit} M
+                    </span>
                   </div>
 
-                  {/* Downloads Limit Input */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                      Downloads Limit Operations (Current Used: {drawerCustomer.usageDetails.downloads.current.toLocaleString()})
-                    </label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input
-                        type="number"
-                        className="toolbar-search"
-                        style={{ width: '180px', padding: '6px 8px' }}
-                        value={drawerCustomer.usageDetails.downloads.limit}
-                        onChange={(e) => handleUpdateQuota('downloads', e.target.value)}
-                      />
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>Operations</span>
-                    </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>Downloads</span>
+                    <span style={{ color: '#1e293b', fontWeight: 700 }}>
+                      {drawerCustomer.usageDetails.downloads.current.toLocaleString()} / {drawerCustomer.usageDetails.downloads.limit.toLocaleString()}
+                    </span>
                   </div>
 
                 </div>
               </div>
-
-              {/* Resource Split list */}
-              <div className="drawer-section">
-                <span className="drawer-section-title">Azure Infrastructure Consumption split</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {Object.entries(drawerCustomer.azureCostSplit).map(([key, val]) => (
-                    <div key={key} style={{ display: 'flex', justify: 'space-between', fontSize: '12px', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>
-                      <span style={{ textTransform: 'capitalize', color: '#64748b', fontWeight: 500 }}>{key} cost</span>
-                      <strong style={{ color: '#1e293b' }}>${val}</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recommendation */}
-              {(() => {
-                const rec = getRecommendation(drawerCustomer);
-                return (
-                  <div style={{
-                    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-                    borderRadius: '10px',
-                    padding: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 4px 16px rgba(15, 23, 42, 0.25)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #e91e63, #ff6090)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}>
-                        <Sparkles size={14} color="#fff" />
-                      </div>
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        color: '#ffffff',
-                        letterSpacing: '0.3px'
-                      }}>
-                        Recommended Action
-                      </span>
-                    </div>
-                    <p style={{
-                      fontSize: '12.5px',
-                      margin: 0,
-                      color: '#cbd5e1',
-                      lineHeight: '1.55'
-                    }}>
-                      {rec.text}
-                    </p>
-                    {rec.nextPlan && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '2px' }}>
-                        <button
-                          className="btn btn-pink"
-                          style={{
-                            flex: 1,
-                            padding: '9px 0',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            borderRadius: '8px',
-                            letterSpacing: '0.3px'
-                          }}
-                          onClick={() => {
-                            setCustomers(prev => prev.map(c => {
-                              if (c.id === drawerCustomer.id) {
-                                return { ...c, planName: rec.nextPlan, monthlyFee: rec.fee };
-                              }
-                              return c;
-                            }));
-                            setToastMsg(`Successfully upgraded ${drawerCustomer.name} to ${rec.nextPlan}!`);
-                          }}
-                        >
-                          Upgrade to {rec.nextPlan}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
 
             </div>
 
