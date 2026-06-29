@@ -2398,37 +2398,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Highlights billing charts */}
-                  <div className="dashboard-grid-1-1">
-                    <div className="card">
-                      <div className="section-title-bar">
-                        <span className="section-title"><TrendingUp size={15} className="text-green" /> Overage Revenue by Organization</span>
-                        <span className="badge badge-green">Billing Leaders</span>
-                      </div>
-                      <div className="chart-container" style={{ height: '260px', marginTop: '10px' }}>
-                        <SvgOverageRevenueChart
-                          data={customers.map(c => ({
-                            name: c.name.split(' ')[0], // short name
-                            value: c.overages
-                          })).sort((a, b) => b.value - a.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="card">
-                      <div className="section-title-bar">
-                        <span className="section-title"><Cpu size={15} className="text-pink" /> Aggregate Monthly Billing Revenue</span>
-                        <span className="badge badge-pink">12M billing growth</span>
-                      </div>
-                      <div className="chart-container" style={{ height: '220px', marginTop: '15px' }}>
-                        <SvgLineChart
-                          data={aggregateRevenueTrend}
-                          labels={['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
-                          strokeColor="#db2777"
-                        />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
 
