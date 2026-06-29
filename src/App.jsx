@@ -1928,7 +1928,7 @@ export default function App() {
                 onClick={() => setAdminActiveSection('invoices')}
               >
                 <FileSpreadsheet size={15} />
-                <span>Client Invoices</span>
+                <span>Invoices</span>
               </button>
             </>
           )}
@@ -2164,30 +2164,6 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="card kpi-card pink">
-                      <div className="kpi-header">
-                        <span>Monthly Billing Revenue</span>
-                        <DollarSign size={14} className="kpi-icon" />
-                      </div>
-                      <span className="kpi-value">${adminKPIs.monthlyRevenue.toLocaleString()}</span>
-                      <div className="kpi-footer">
-                        <span className="text-muted">Fees + overages</span>
-                      </div>
-                    </div>
-
-                    <div className="card kpi-card green">
-                      <div className="kpi-header">
-                        <span>Total Overage Revenue</span>
-                        <TrendingUp size={14} className="kpi-icon" />
-                      </div>
-                      <span className="kpi-value text-green">
-                        ${adminKPIs.overageRevenue.toLocaleString()}
-                      </span>
-                      <div className="kpi-footer">
-                        <span className="text-green font-medium">From quota overages</span>
-                      </div>
-                    </div>
-
                     <div className="card kpi-card coral">
                       <div className="kpi-header">
                         <span>Total Managed Stores</span>
@@ -2198,6 +2174,17 @@ export default function App() {
                       </span>
                       <div className="kpi-footer">
                         <span className="text-muted">Across all accounts</span>
+                      </div>
+                    </div>
+
+                    <div className="card kpi-card pink">
+                      <div className="kpi-header">
+                        <span>Total Billing</span>
+                        <DollarSign size={14} className="kpi-icon" />
+                      </div>
+                      <span className="kpi-value">${(adminKPIs.monthlyRevenue + adminKPIs.overageRevenue).toLocaleString()}</span>
+                      <div className="kpi-footer">
+                        <span className="text-muted">Base fees + overages</span>
                       </div>
                     </div>
                   </div>
@@ -2449,8 +2436,8 @@ export default function App() {
                 <div>
                   <div className="dashboard-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <h1 className="page-title">Client Billing Invoices</h1>
-                      <p className="page-subtitle">Track, audit, and manage client invoices generated based on resource subscriptions and overages.</p>
+                      <h1 className="page-title">Invoices</h1>
+                      <p className="page-subtitle">Track, audit, and manage monthly Azure infrastructure spend invoices and compare against collected client revenue.</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>Filter:</span>
@@ -2480,7 +2467,7 @@ export default function App() {
                       )}
                       <div style={{ borderLeft: '1px solid #e2e8f0', height: '20px', margin: '0 4px' }}></div>
                       <label className="btn btn-navy" style={{ cursor: 'pointer', display: 'inline-flex', margin: 0 }}>
-                        <Plus size={14} /> Upload Client Invoice
+                        <Plus size={14} /> Upload Azure Invoice
                         <input
                           type="file"
                           accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.txt"
@@ -2489,17 +2476,20 @@ export default function App() {
                             const file = e.target.files[0];
                             if (!file) return;
 
-                            const nextId = `INV-2026-${Math.floor(Math.random() * 90 + 10)}`;
+                            const nextId = `AZ-INV-2026-${Math.floor(Math.random() * 90 + 10)}`;
                             const today = new Date();
                             const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
                             const monthStr = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + ' (Uploaded)';
                             const fileUrl = URL.createObjectURL(file);
 
+                            // Calculate total azure cost based on current customer rows
+                            const currentAzureCost = customers.reduce((sum, c) => sum + c.azureCost, 0);
+
                             const newInv = {
                               id: nextId,
                               month: monthStr,
                               date: dateStr,
-                              azureCost: Math.round(adminKPIs.monthlyRevenue * 0.35),
+                              azureCost: currentAzureCost,
                               clientRevenue: adminKPIs.monthlyRevenue,
                               status: 'Paid',
                               fileName: file.name,
@@ -2508,44 +2498,33 @@ export default function App() {
 
                             setAdminAzureInvoices(prev => [newInv, ...prev]);
                             setInvoiceCurrentPage(1);
-                            setToastMsg(`Uploaded Invoice: ${file.name}`);
+                            setToastMsg(`Uploaded Azure Invoice: ${file.name}`);
                           }}
                         />
                       </label>
                     </div>
                   </div>
 
-                  {/* KPI Cards */}
-                  <div className="kpi-grid">
-                    <div className="card kpi-card">
+                  {/* Azure Payment KPI */}
+                  <div className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', maxWidth: '400px' }}>
+                    <div className="card kpi-card coral">
                       <div className="kpi-header">
-                        <span>This Month Total Billings</span>
+                        <span>This Month Azure Payment</span>
                         <DollarSign size={14} className="kpi-icon" />
                       </div>
-                      <span className="kpi-value">${adminKPIs.monthlyRevenue.toLocaleString()}</span>
+                      <span className="kpi-value">${customers.reduce((sum, c) => sum + c.azureCost, 0).toLocaleString()}</span>
                       <div className="kpi-footer">
-                        <span className="text-green font-medium">All active customer tiers</span>
-                      </div>
-                    </div>
-
-                    <div className="card kpi-card pink">
-                      <div className="kpi-header">
-                        <span>Monthly Overage Revenue</span>
-                        <TrendingUp size={14} className="kpi-icon" />
-                      </div>
-                      <span className="kpi-value">${adminKPIs.overageRevenue.toLocaleString()}</span>
-                      <div className="kpi-footer">
-                        <span className="text-pink font-medium">From active resources</span>
+                        <span className="text-coral font-medium">To be paid to Microsoft Azure</span>
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '24px' }}></div>
+                  <div style={{ marginTop: '20px' }}></div>
 
-                  {/* Full-width Invoice Audit Log Table */}
+                  {/* Full-width Invoice History Table */}
                   <div className="card" style={{ marginBottom: '24px' }}>
                     <div className="section-title-bar">
-                      <span className="section-title"><Layers size={16} className="text-blue" /> Client Invoice History & Audit Log</span>
+                      <span className="section-title"><Layers size={16} className="text-blue" /> Invoice History</span>
                       {invoiceMonthFilter !== 'all' && (
                         <span className="badge badge-blue">{invoiceMonthFilter}</span>
                       )}
@@ -2557,25 +2536,26 @@ export default function App() {
                             <th>Invoice ID</th>
                             <th>Billing Period</th>
                             <th>Date Issued</th>
-                            <th>Base Plan Fees</th>
-                            <th>Overage Charges</th>
-                            <th>Total Collected Billings</th>
+                            <th>Azure Infra Cost</th>
+                            <th>Client Revenue</th>
+                            <th>Net Profit</th>
                             <th>Status</th>
                             <th className="text-right">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                           {paginatedInvoices.map((inv) => {
-                            const overageAmt = Math.round(inv.azureCost * 0.35);
-                            const basePlanAmt = inv.clientRevenue - overageAmt;
+                            const profitVal = inv.clientRevenue - inv.azureCost;
                             return (
                               <tr key={inv.id} style={{ cursor: 'default' }}>
-                                <td className="bold-value">{inv.id.replace('AZ-INV', 'INV')}</td>
+                                <td className="bold-value">{inv.id}</td>
                                 <td>{inv.month}</td>
                                 <td>{inv.date}</td>
-                                <td className="bold-value text-blue">${basePlanAmt.toLocaleString()}</td>
-                                <td className="bold-value text-pink">${overageAmt.toLocaleString()}</td>
-                                <td className="bold-value text-green">${inv.clientRevenue.toLocaleString()}</td>
+                                <td className="bold-value text-coral">${inv.azureCost.toLocaleString()}</td>
+                                <td className="bold-value text-blue">${inv.clientRevenue.toLocaleString()}</td>
+                                <td className={`bold-value ${profitVal < 0 ? 'text-critical' : 'text-green'}`}>
+                                  ${profitVal.toLocaleString()}
+                                </td>
                                 <td>
                                   <span className="status-badge healthy">
                                     {inv.status}
@@ -2592,15 +2572,15 @@ export default function App() {
                                         element.href = inv.fileUrl;
                                       } else {
                                         file = new Blob([
-                                          `CLIENT SUBSCRIPTION INVOICE\n==========================\nInvoice ID: ${inv.id.replace('AZ-INV', 'INV')}\nPeriod: ${inv.month}\nDate Issued: ${inv.date}\nBase Plan Fees: $${basePlanAmt.toLocaleString()}\nOverage Charges: $${overageAmt.toLocaleString()}\nTotal Collected Billings: $${inv.clientRevenue.toLocaleString()}\nStatus: ${inv.status}\n\nThis is a verified client subscription invoice report.`
+                                          `MICROSOFT AZURE ENTERPRISE INVOICE\n=================================\nInvoice ID: ${inv.id}\nPeriod: ${inv.month}\nDate Issued: ${inv.date}\nDirect Azure Infrastructure Spend: $${inv.azureCost.toLocaleString()}\nTotal Collected Client Billings: $${inv.clientRevenue.toLocaleString()}\nNet Profit: $${profitVal.toLocaleString()} (${(profitVal / inv.clientRevenue * 100).toFixed(1)}%)\nStatus: ${inv.status}\n\nThis is a verified Azure billing and client revenue audit report.`
                                         ], { type: 'text/plain' });
                                         element.href = URL.createObjectURL(file);
                                       }
-                                      element.download = inv.fileName || `${inv.id.replace('AZ-INV', 'INV')}.txt`;
+                                      element.download = inv.fileName || `${inv.id}.txt`;
                                       document.body.appendChild(element);
                                       element.click();
                                       document.body.removeChild(element);
-                                      setToastMsg(`Downloaded invoice: ${inv.fileName || inv.id.replace('AZ-INV', 'INV')}`);
+                                      setToastMsg(`Downloaded invoice: ${inv.fileName || inv.id}`);
                                     }}
                                   >
                                     <Download size={12} /> Download
@@ -2660,12 +2640,12 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Full-width Stacked/Dual Billing Revenue Chart */}
+                  {/* Full-width Azure Spend vs Client Revenue Chart */}
                   <div className="card">
                     <div className="section-title-bar">
                       <span className="section-title">
                         <TrendingUp size={16} className="text-blue" />
-                        Monthly Billing Revenue Breakdown
+                        Azure Spend vs. Collected Client Revenue
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748b' }}>Select Year:</span>
@@ -2684,17 +2664,13 @@ export default function App() {
                     <div style={{ marginTop: '10px' }}>
                       {chartData.labels.length > 0 ? (
                         <SvgDualBarChart
-                          line1={chartData.line2.map((total, idx) => {
-                            const spend = chartData.line1[idx];
-                            const overage = Math.round(spend * 0.35);
-                            return total - overage;
-                          })}
-                          line2={chartData.line1.map(spend => Math.round(spend * 0.35))}
+                          line1={chartData.line1}
+                          line2={chartData.line2}
                           labels={chartData.labels}
-                          line1Label="Base Plan Revenue"
-                          line2Label="Overage Revenue"
-                          line1Color="#3b82f6"
-                          line2Color="#db2777"
+                          line1Label="Azure Infra Spend"
+                          line2Label="Collected Client Revenue"
+                          line1Color="#f43f5e"
+                          line2Color="#10b981"
                           height={220}
                           fontSize={8}
                         />
