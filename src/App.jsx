@@ -41,7 +41,7 @@ const INITIAL_CUSTOMERS = [
     stores: 30,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 357, // Internal cost to us
+    azureCost: 2850, // Internal cost to us
     overages: 2231, // Extra charges customer pays
     quotaScore: 25,
     usageDetails: {
@@ -57,7 +57,7 @@ const INITIAL_CUSTOMERS = [
       { service: 'Downloads', included: '150k', current: '450k', remaining: '0k', overage: '300k', cost: 60 }
     ],
     moduleCostSplit: { dam: 420, downloads: 480, api: 242 },
-    azureCostSplit: { storage: 135, cdn: 108, api: 63, downloads: 36 },
+    azureCostSplit: { storage: 1080, cdn: 860, api: 510, downloads: 400 },
     costTrend: [1100, 1150, 1120, 1220, 1250, 1280, 1310, 1340, 1320, 1390, 1410, 3131],
     costTrendPreviousYear: [950, 980, 1010, 990, 1020, 1050, 1080, 1110, 1090, 1120, 1140, 1150],
     storageTrend: [620, 640, 660, 690, 710, 730, 760, 780, 800, 810, 830, 850],
@@ -84,7 +84,7 @@ const INITIAL_CUSTOMERS = [
     stores: 20,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 243,
+    azureCost: 1680,
     overages: 749,
     quotaScore: 35,
     usageDetails: {
@@ -100,7 +100,7 @@ const INITIAL_CUSTOMERS = [
       { service: 'Downloads', included: '100k', current: '155k', remaining: '0k', overage: '55k', cost: 11 }
     ],
     moduleCostSplit: { dam: 180, downloads: 220, api: 90 },
-    azureCostSplit: { storage: 90, cdn: 72, api: 42, downloads: 24 },
+    azureCostSplit: { storage: 640, cdn: 510, api: 300, downloads: 230 },
     costTrend: [350, 360, 340, 355, 370, 365, 380, 375, 360, 380, 390, 1349],
     costTrendPreviousYear: [310, 315, 320, 330, 325, 335, 340, 345, 330, 340, 350, 345],
     storageTrend: [250, 255, 260, 270, 275, 280, 290, 295, 300, 305, 308, 310],
@@ -125,7 +125,7 @@ const INITIAL_CUSTOMERS = [
     stores: 10,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 129,
+    azureCost: 920,
     overages: 550,
     quotaScore: 30,
     usageDetails: {
@@ -141,7 +141,7 @@ const INITIAL_CUSTOMERS = [
       { service: 'Downloads', included: '50k', current: '95k', remaining: '0k', overage: '45k', cost: 9 }
     ],
     moduleCostSplit: { dam: 180, downloads: 140, api: 80 },
-    azureCostSplit: { storage: 45, cdn: 36, api: 21, downloads: 12 },
+    azureCostSplit: { storage: 350, cdn: 280, api: 165, downloads: 125 },
     costTrend: [380, 395, 410, 420, 430, 445, 450, 460, 455, 470, 480, 850],
     costTrendPreviousYear: [320, 330, 340, 345, 350, 360, 355, 365, 370, 375, 380, 375],
     storageTrend: [110, 120, 125, 130, 142, 150, 155, 160, 168, 172, 175, 180],
@@ -166,7 +166,7 @@ const INITIAL_CUSTOMERS = [
     stores: 40,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 471,
+    azureCost: 3400,
     overages: 1854,
     quotaScore: 32,
     usageDetails: {
@@ -182,7 +182,7 @@ const INITIAL_CUSTOMERS = [
       { service: 'Downloads', included: '200k', current: '360k', remaining: '0k', overage: '160k', cost: 32 }
     ],
     moduleCostSplit: { dam: 310, downloads: 180, api: 120 },
-    azureCostSplit: { storage: 180, cdn: 144, api: 84, downloads: 48 },
+    azureCostSplit: { storage: 1290, cdn: 1020, api: 610, downloads: 480 },
     costTrend: [780, 790, 810, 800, 820, 830, 840, 835, 840, 845, 860, 3054],
     costTrendPreviousYear: [680, 700, 710, 720, 730, 740, 750, 745, 755, 760, 770, 765],
     storageTrend: [610, 625, 630, 642, 660, 675, 690, 705, 715, 722, 735, 740],
@@ -207,7 +207,7 @@ const INITIAL_CUSTOMERS = [
     stores: 20,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 243,
+    azureCost: 2180,
     overages: 1247,
     quotaScore: 28,
     usageDetails: {
@@ -223,7 +223,7 @@ const INITIAL_CUSTOMERS = [
       { service: 'Downloads', included: '100k', current: '240k', remaining: '0k', overage: '140k', cost: 28 }
     ],
     moduleCostSplit: { dam: 390, downloads: 310, api: 170 },
-    azureCostSplit: { storage: 90, cdn: 72, api: 42, downloads: 24 },
+    azureCostSplit: { storage: 830, cdn: 660, api: 390, downloads: 300 },
     costTrend: [920, 950, 970, 990, 1010, 1050, 1070, 1090, 1110, 1120, 1140, 1847],
     costTrendPreviousYear: [800, 820, 830, 850, 860, 880, 890, 910, 895, 920, 915, 930],
     storageTrend: [380, 395, 410, 420, 430, 440, 450, 455, 462, 470, 475, 480],
@@ -248,7 +248,7 @@ const INITIAL_CUSTOMERS = [
     stores: 70,
     billingPeriod: 'June 1, 2026 - June 30, 2026',
     nextInvoiceDate: 'July 1, 2026',
-    azureCost: 813,
+    azureCost: 9200,
     overages: 7731,
     quotaScore: 22,
     usageDetails: {
@@ -264,7 +264,7 @@ const INITIAL_CUSTOMERS = [
       { service: 'Downloads', included: '350k', current: '1.45M', remaining: '0k', overage: '1100k', cost: 220 }
     ],
     moduleCostSplit: { dam: 1100, downloads: 900, api: 300 },
-    azureCostSplit: { storage: 315, cdn: 252, api: 147, downloads: 84 },
+    azureCostSplit: { storage: 3520, cdn: 2800, api: 1630, downloads: 1250 },
     costTrend: [2600, 2700, 2750, 2800, 2900, 2950, 3000, 3050, 3020, 3080, 3120, 9831],
     costTrendPreviousYear: [2100, 2200, 2250, 2300, 2350, 2400, 2450, 2500, 2480, 2550, 2580, 2600],
     storageTrend: [2100, 2150, 2200, 2300, 2400, 2480, 2550, 2600, 2680, 2750, 2800, 2850],
